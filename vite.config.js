@@ -1,4 +1,4 @@
- import path from "path"
+import path from "path"
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
@@ -21,4 +21,16 @@ export default defineConfig({
       '.ngrok-free.app', // Allow a specific IP address
     ],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Set 'assetFileNames' to a fixed name and path
+        assetFileNames: 'K-Assistant/assests/index-[hash].css', 
+        
+        // Optional: you can also set specific names for JS entry files and chunks
+        entryFileNames: 'K-Assistant/assests/index-[hash].js',
+        // chunkFileNames: 'chunk.[hash].js', 
+      }
+    }
+  }
 })

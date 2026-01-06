@@ -2,29 +2,23 @@
     import { ref, reactive, onMounted } from 'vue'
     import { fetchData } from "./composables/fetchData"
 
+    // 共用 component
     import Login from './components/Login.vue'
+    import PopupMessage from './components/PopupMessage.vue'
+    import SettingPersonal from './components/SettingPersonal.vue'
+    import Readme from './components/Readme.vue'
+    import Author from './components/Author.vue'
 
+    // 專用 component
     import Finance from './components/Finance.vue'
     import Gallery from './components/Gallery.vue'
     import Footmark from './components/Footmark.vue'
-    import Readme from './components/Readme.vue'
     import Chat from './components/Chat.vue'
     import Imagen from './components/Imagen.vue'
     import PlanTrip from './components/PlanTrip.vue'
     import TripSchedule from './components/TripSchedule.vue'
-    import Author from './components/Author.vue'
     import Recollection from './components/Recollection.vue'
     import Achievement from './components/Achievement.vue'
-    import PopupMessage from './components/PopupMessage.vue'
-    import SettingPersonal from './components/SettingPersonal.vue'
-
-    // 郭家基金相關 component - 先寄生於此專案, 待成熟後, 再分家出去
-    import QA from './components_kuoFund/QA.vue'
-    import Recall from './components_kuoFund/Recall.vue'
-    import Survey from './components_kuoFund/Survey.vue'
-    import Finance_KF from './components_kuoFund/Finance.vue'
-    import Rule_KF from './components_kuoFund/Rule.vue'
-    import Activity_KF from './components_kuoFund/Activity.vue'
 
     onMounted(() => {
         console.log("App mounted.");
@@ -398,29 +392,21 @@
 
     <!-- 功能 component -->
     <div class="p-4 h-11/12">
-        <!-- Login -->
+        <!-- 共用 component -->
         <Login v-if="appSetting.contentComponent === 'login'" @signin="signin" @popup-message="popupMessage" />
-
-        <!-- component -->
-        <Gallery v-if="appSetting.contentComponent === 'gallery'" :title="appSetting.title" :account="userInfo.account" :cname="userInfo.cname" :user_role="userInfo.role" :focus_news_topic="userInfo.focus_news_topic" @popup-message="popupMessage" />
         <Readme v-else-if="appSetting.contentComponent === 'readme'" :title="appSetting.title" :reference="appSetting.reference"  @introduce-author="gotoIntroduceAuthor" />
+        <Author v-else-if="appSetting.contentComponent === 'author'" :title="appSetting.title" />
+
+        <!-- 專用 component -->
+        <Gallery v-if="appSetting.contentComponent === 'gallery'" :title="appSetting.title" :account="userInfo.account" :cname="userInfo.cname" :user_role="userInfo.role" :focus_news_topic="userInfo.focus_news_topic" @popup-message="popupMessage" />
         <Footmark v-else-if="appSetting.contentComponent === 'footmark'" :title="appSetting.title" :account="userInfo.account" :googleMapApiKey="appSetting.googleMapApiKey" @popup-message="popupMessage" />
         <Finance v-else-if="appSetting.contentComponent === 'finance'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <Chat v-else-if="appSetting.contentComponent === 'chat'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <Imagen v-else-if="appSetting.contentComponent === 'imagen'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <PlanTrip v-else-if="appSetting.contentComponent === 'plan_trip'" :title="appSetting.title" :account="userInfo.account" :googleMapApiKey="appSetting.googleMapApiKey" @popup-message="popupMessage" />
         <TripSchedule v-else-if="appSetting.contentComponent === 'trip_schedule'" :title="appSetting.title" :account="userInfo.account" :googleMapApiKey="appSetting.googleMapApiKey" @popup-message="popupMessage" />
-        <Author v-else-if="appSetting.contentComponent === 'author'" :title="appSetting.title" />
         <Recollection v-else-if="appSetting.contentComponent === 'recollection'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <Achievement v-else-if="appSetting.contentComponent === 'achievement'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" />
-
-        <!-- 郭家基金 - component -->
-        <QA v-else-if="appSetting.contentComponent === 'qa'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
-        <Recall v-else-if="appSetting.contentComponent === 'recall'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
-        <Survey v-else-if="appSetting.contentComponent === 'survey'" :title="appSetting.title" :account="userInfo.account" />
-        <Finance_KF v-else-if="appSetting.contentComponent === 'finance_kf'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
-        <Rule_KF v-else-if="appSetting.contentComponent === 'rule_kf'" :title="appSetting.title" :account="userInfo.account" :funSetting="kf_funSetting" />
-        <Activity_KF v-else-if="appSetting.contentComponent === 'activity_kf'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" :annouce_period_start="kf_funSetting.activity_annouce_period.start" :annouce_period_end="kf_funSetting.activity_annouce_period.end" />
     </div>
 
     <!-- userInfo modal -->
