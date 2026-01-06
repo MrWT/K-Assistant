@@ -35,7 +35,7 @@
         <span class="text-2xl">您的個人助理</span>
     </div>
 
-    <div class="w-1/1 fixed left-0 bottom-10 flex justify-center">
+    <div class="w-1/1 fixed left-0 bottom-10 md:bottom-30 flex justify-center">
         <div class="w-2/3 flex flex-row justify-center items-center join ">
             <input type="text" class="input join-item" placeholder="請提供帳號" v-model="account" />
             <a class="join-item border border-2 border-blue-700 bg-sky-400 cursor-pointer text-center text-gray-100 p-2 hover:bg-gray-200 hover:text-gray-900" @click="signin">

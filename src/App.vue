@@ -292,9 +292,13 @@
         </div>
     </div>
 
-    <div class="navbar bg-base-100 shadow-sm z-[51] sticky top-0">
+    <!-- 登入介面 -->
+    <Login v-if="signinStatus === false" class="w-1/1 h-1/1" @signin="signin" @popup-message="popupMessage" />
+
+    <!-- navbar -->
+    <div v-if="signinStatus === true" class="navbar bg-base-100 shadow-sm z-[51] sticky top-0">
         <div class="navbar-start">
-            <div v-if="signinStatus === true" class="dropdown">
+            <div class="dropdown">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /> </svg>
                 </div>
@@ -330,25 +334,26 @@
                 </svg>
             </a>
             <!-- userInfo -->
-            <a v-if="signinStatus === true" class="cursor-pointer tooltip tooltip-bottom" data-tip="使用者資訊" @click="openUserInfoModal">
+            <a class="cursor-pointer tooltip tooltip-bottom" data-tip="使用者資訊" @click="openUserInfoModal">
                 <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                     <path fill-rule="evenodd" d="M4 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4Zm10 5a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm0 3a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm0 3a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-8-5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm1.942 4a3 3 0 0 0-2.847 2.051l-.044.133-.004.012c-.042.126-.055.167-.042.195.006.013.02.023.038.039.032.025.08.064.146.155A1 1 0 0 0 6 17h6a1 1 0 0 0 .811-.415.713.713 0 0 1 .146-.155c.019-.016.031-.026.038-.04.014-.027 0-.068-.042-.194l-.004-.012-.044-.133A3 3 0 0 0 10.059 14H7.942Z" clip-rule="evenodd"/>
                 </svg>
             </a>
             <!-- signin -->
+            <!--
             <a v-if="signinStatus === false" class="cursor-pointer tooltip tooltip-bottom" data-tip="登入" @click="gotoPage('login')">
                 <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"/>
                 </svg>
             </a>
+            -->
         </div>
     </div>
 
     <!-- 功能 component -->
-    <div class="p-4 h-11/12">
+    <div v-if="signinStatus === true" class="p-4 h-11/12">
         <!-- 共用 component -->
-        <Login v-if="appSetting.contentComponent === 'login'" @signin="signin" @popup-message="popupMessage" />
-        <Readme v-else-if="appSetting.contentComponent === 'readme'" :title="appSetting.title" :reference="appSetting.reference"  @introduce-author="gotoIntroduceAuthor" />
+        <Readme v-if="appSetting.contentComponent === 'readme'" :title="appSetting.title" :reference="appSetting.reference"  @introduce-author="gotoIntroduceAuthor" />
         <Author v-else-if="appSetting.contentComponent === 'author'" :title="appSetting.title" />
 
         <!-- 專用 component -->
@@ -406,6 +411,7 @@
         </div>
     </dialog>
 
+    <!-- PopupMessage -->
     <PopupMessage id="alertMsg" class="hidden z-[999]" :status="opObj.status" :message="opObj.message" />
 </template>
 
