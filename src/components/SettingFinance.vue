@@ -45,14 +45,6 @@
             num: 0,
             price: 0,
         },
-        stock_tw00878: {
-            num: 0,
-            price: 0,
-        },
-        stock_tw00919: {
-            num: 0,
-            price: 0,
-        },
     });
 
     // 初始化 component
@@ -88,14 +80,6 @@
                     // 台股資訊
                     finance.stock_tw0056.num = finObj["value1"];
                     finance.stock_tw0056.price = 0;
-                } else if(finObj["name"] === "stock_00878"){
-                    // 台股資訊
-                    finance.stock_tw00878.num = finObj["value1"];
-                    finance.stock_tw00878.price = 0;
-                } else if(finObj["name"] === "stock_00919"){
-                    // 台股資訊
-                    finance.stock_tw00919.num = finObj["value1"];
-                    finance.stock_tw00919.price = 0;
                 } else if(finObj["name"] === "stock_nano"){
                     // 奈米投資訊
                     finance.stock_nano.value = finObj["value1"];
@@ -218,14 +202,6 @@
         <div class="w-1/1 flex flex-row gap-1">
             <label class="label flex-none">股數:</label>
             <input type="number" min="0" class="input flex-1" placeholder="0" v-model="finance.stock_tw0056.num" />
-        </div>
-
-        <div class="divider divider-neutral">
-            存股: 00878.TW
-        </div>
-        <div class="w-1/1 flex flex-row gap-1">
-            <label class="label flex-none">股數:</label>
-            <input type="number" min="0" class="input flex-1" placeholder="0" v-model="finance.stock_tw00878.num" />
         </div>
 
         <div class="divider divider-neutral">

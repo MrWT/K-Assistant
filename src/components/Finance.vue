@@ -53,10 +53,6 @@
         totalTWD: "",
         tw0056: "",
         tw0056_TWD: "",
-        tw00878: "",
-        tw00878_TWD: "",
-        tw00919: "",
-        tw00919_TWD: "",
     });
 
     let areaBlockStatus = reactive({
@@ -126,21 +122,7 @@
                     question: "台股ETF 0056 的股價, 只給我股價數字就好",
                 }
             }, "AI");
-            // 00878
-            let fetchPromise_00878 = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "stock_00878",
-                }
-            });
-            let fetchPromise_price_00878 = fetchData({
-                api: "get_answer",
-                data: {
-                    question: "台股ETF 00878 的股價, 只給我股價數字就好",
-                }
-            }, "AI");
-            Promise.all([fetchPromise_0056, fetchPromise_price_0056, fetchPromise_00878, fetchPromise_price_00878]).then((values) => {
+            Promise.all([fetchPromise_0056, fetchPromise_price_0056]).then((values) => {
                 console.log("台股資訊=", values);
 
                 // 0056
@@ -161,24 +143,7 @@
                     finObj_0056["value2"] = price_0056;
                 }
 
-                // 00878
-                let finObj_00878 = values[2][0];
-                // 00878 的即時股價
-                {
-                    let price_00878 = 0;
-                    try
-                    {
-                        let jsonStr_ans = values[3].replace(/```json/g, "");
-                        let jsonObj_ans = JSON.parse(jsonStr_ans);
-                        price_00878 = parseFloat( jsonObj_ans["answer"] );
-                    }
-                    catch(ex){
-                        price_00878 = 0;
-                    }
-                    finObj_00878["value2"] = price_00878;
-                }
-
-                let stockDatas_TWD = [finObj_0056, finObj_00878];
+                let stockDatas_TWD = [finObj_0056];
                 buildStockTW(stockDatas_TWD);
             });
         }
@@ -444,20 +409,14 @@
             switch(dataObj["name"]){
                 case "stock_0056":
                     stockTW.tw0056 = new Intl.NumberFormat().format( dataObj["value1"] );
-                    stockTW.tw0056_TWD = new Intl.NumberFormat().format( dataObj["value1"] * dataObj["value2"] );
-                    break;
-                case "stock_00878":
-                    stockTW.tw00878 = new Intl.NumberFormat().format( dataObj["value1"] );
-                    stockTW.tw00878_TWD = new Intl.NumberFormat().format( dataObj["value1"] * dataObj["value2"] );
-                    break;
-                case "stock_00919":
-                    stockTW.tw00919 = new Intl.NumberFormat().format( dataObj["value1"] );
-                    stockTW.tw00919_TWD = new Intl.NumberFormat().format( dataObj["value1"] * dataObj["value2"] );
+
+                    let twd_value_0056 = Math.floor( dataObj["value1"] * dataObj["value2"] );
+                    stockTW.tw0056_TWD = new Intl.NumberFormat().format( twd_value_0056 );
                     break;
             }
         });
         stockTW.totalValue = new Intl.NumberFormat().format(stockTotalValue);
-        stockTW.totalTWD = new Intl.NumberFormat().format(stockTotalTWD);
+        stockTW.totalTWD = new Intl.NumberFormat().format( Math.floor( stockTotalTWD ) );
 
         areaBlockStatus.stock_twd = true;
     }
@@ -601,22 +560,13 @@
         <div class="h-1/1 flex content-center hidden md:block">
             <div>=</div>
         </div>
-        <div class="flex flex-row gap-1 w-1/1 md:w-1/2">
-            <div v-if="areaBlockStatus.stock_twd" class="card bg-gray-300 rounded-box grid p-5 h-10/10 w-1/2 place-items-start">
+        <div class="flex flex-row gap-1 w-1/1">
+            <div v-if="areaBlockStatus.stock_twd" class="card bg-gray-300 rounded-box grid p-5 h-1/1 w-1/1 place-items-start">
                 <span class="text-2xl">0056 </span> 
                 <span class="text-lg">股數: {{ stockTW.tw0056 }}</span>
                 <span class="text-lg">TWD: {{ stockTW.tw0056_TWD }}</span>
             </div>
-            <div v-if="!areaBlockStatus.stock_twd" class="skeleton h-32 w-1/2"></div>
-            <div class="h-1/1 flex items-center">
-                <div>+</div>
-            </div>
-            <div v-if="areaBlockStatus.stock_twd" class="card bg-gray-300 rounded-box grid p-5 h-10/10 w-1/2 place-items-start">
-                <span class="text-2xl">00878 </span>
-                <span class="text-lg">股數: {{ stockTW.tw00878 }}</span>
-                <span class="text-lg">TWD: {{ stockTW.tw00878_TWD }}</span>
-            </div>
-            <div v-if="!areaBlockStatus.stock_twd" class="skeleton h-32 w-1/2"></div>
+            <div v-if="!areaBlockStatus.stock_twd" class="skeleton h-32 w-1/1"></div>
         </div>
     </div>
 
