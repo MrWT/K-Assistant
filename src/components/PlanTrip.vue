@@ -24,8 +24,7 @@
     let chat_room_uuid = ref("INIT");
     let messages = reactive([]);
     let userInfo = reactive({});
-    let aiRoles = reactive([]);
-    let currentAiRole = reactive({});
+    let aiRole = reactive({});
 
     let trip_schedule_obj = {};
     let tripSumupList = reactive([]);
@@ -58,10 +57,6 @@
     }
     // 取得初始資料
     function fetchInitData(){
-        // 取得 AI 角色
-        let fetchAIRolesPromise = fetchData({
-            api: "get_ai_role",
-        }, "AI");
         // 取得使用者資訊
         let fetchUserInfoPromise = fetchData({
             api: "get_user",
@@ -77,14 +72,14 @@
                 account: props.account,
             }
         });
-        Promise.all([fetchAIRolesPromise, fetchUserInfoPromise, fetchTripSchedulePromise]).then((values) => {
+        Promise.all([fetchUserInfoPromise, fetchTripSchedulePromise]).then((values) => {
             console.log("fetchInitData.values=", values);
-            aiRoles = values[0];
-            userInfo = values[1];
+            userInfo = values[0];
+            aiRole = values[0]["ai_role"];
 
             // 建立已排定的行程清單
             {
-                values[2].sort((x, y) => {
+                values[1].sort((x, y) => {
                     if(x["trip_start_date"] > y["trip_start_date"]){
                         return 1;
                     }
@@ -101,7 +96,7 @@
 
                     return 0;
                 });
-                values[2].forEach((schObj, sch_i) => {
+                values[1].forEach((schObj, sch_i) => {
                     let schedule = JSON.parse(schObj["schedule"]);
                     scheduleList.push( schedule );
                 });
@@ -219,19 +214,8 @@
                 chat_room_uuid.value = values[0]["chat_room_uuid"];
                 let ai_role = "AI";
                 let ai_msg = values[0]["message"];
-                let speaker = "";
-                let short_name = "";
-                aiRoles.forEach((roleObj, role_i) => {
-                    if(roleObj["code"] === values[0]["ai_role"]){
-                        speaker = roleObj["name"];
-                        short_name = roleObj["short_name"];
-
-                        currentAiRole["speaker"] = speaker;
-                        currentAiRole["short_name"] = short_name;
-                        currentAiRole["nation"] = roleObj["nation"];
-                        currentAiRole["gender"] = roleObj["gender"];
-                    }
-                });
+                let speaker = aiRole["name"];
+                let short_name = aiRole["short_name"];
 
                 if(ai_msg.indexOf("ERROR:") === 0){
                     if(ai_msg.indexOf("ERROR:429 RESOURCE_EXHAUSTED") === 0){

@@ -30,8 +30,7 @@
     let chat_room_uuid = ref("INIT");
     let messages = reactive([]);
     let userInfo = reactive({});
-    let aiRoles = reactive([]);
-    let currentAiRole = reactive({});
+    let aiRole = reactive({});
     // 提詞機 - 選項
     let promptOptions = reactive({
         nation: [
@@ -91,10 +90,6 @@
     }
     // 取得初始資料
     function fetchInitData(){
-        // 取得 AI 角色
-        let fetchAIRolesPromise = fetchData({
-            api: "get_ai_role",
-        }, "AI");
         // 取得使用者資訊
         let fetchUserInfoPromise = fetchData({
             api: "get_user",
@@ -102,10 +97,10 @@
                 account: props.account,
             }
         });
-        Promise.all([fetchAIRolesPromise, fetchUserInfoPromise]).then((values) => {
+        Promise.all([fetchUserInfoPromise]).then((values) => {
             console.log("fetchInitData.values=", values);
-            aiRoles = values[0];
-            userInfo = values[1];
+            userInfo = values[0];
+            aiRole = values[0]["ai_role"];
         });
     }
     // chat with ai
@@ -136,19 +131,8 @@
             chat_room_uuid.value = values[0]["chat_room_uuid"];
             let ai_role = "AI";
             let ai_msg = values[0]["message"];
-            let speaker = "";
-            let short_name = "";
-            aiRoles.forEach((roleObj, role_i) => {
-                if(roleObj["code"] === values[0]["ai_role"]){
-                    speaker = roleObj["name"];
-                    short_name = roleObj["short_name"];
-
-                    currentAiRole["speaker"] = roleObj["speaker"];
-                    currentAiRole["short_name"] = roleObj["short_name"];
-                    currentAiRole["nation"] = roleObj["nation"];
-                    currentAiRole["gender"] = roleObj["gender"];
-                }
-            });
+            let speaker = aiRole["name"];
+            let short_name = aiRole["short_name"];
 
             // AI 出錯了
             if(ai_msg.indexOf("ERROR:") === 0){
@@ -297,46 +281,6 @@
         userMessage.value = re_msg;
         send();
     }      
-    // 開啟 setting modal
-    function openSettingModal(){
-        document.getElementById("settingModal").showModal();
-    }
-    // 關閉 setting modal
-    function closeSettingModal(){
-        document.getElementById("settingModal").close();
-    }
-    // 改變 AI 角色
-    function changeAiRole(){
-        console.log("changeAiRole.currentAiRole=", currentAiRole);
-        let msg = "talk_with_";
-        switch(currentAiRole.nation){
-            case "Korea":
-                msg += "kr_";
-                break;
-            case "Japan":
-                msg += "jp_";
-                break;
-            case "Taiwan":
-                msg += "tw_";
-                break;
-        }
-        switch(currentAiRole.gender){
-            case "male":
-                msg += "boy";
-                break;
-            case "female":
-                msg += "girl";
-                break;
-        }
-
-        // 清空聊天清單
-        messages.splice(0, messages.length);
-
-        userMessage.value = msg;
-        chat();
-        // 關閉設定 modal
-        closeSettingModal();
-    }
     // 開啟 prompt modal
     function openPromptModal(){
         document.getElementById("promptModal").showModal();
@@ -436,7 +380,6 @@
     function closeAllModal(){
         closeNewChatConfirmModal();
         closePromptModal();
-        closeSettingModal();
     }
     // 開啟/關閉 function bar
     function toggleFunctionBar(){
@@ -525,9 +468,6 @@
             <button class="btn rounded-xl bg-red-300 text-gray-900 hover:bg-blue-300" @click="openNewChatConfirmModal">
                 新對話
             </button>
-            <button class="btn rounded-xl bg-gray-300 hover:bg-blue-300" @click="openSettingModal">
-                AI 角色
-            </button>
             <button class="btn rounded-xl bg-gray-900 text-white hover:bg-blue-300 hover:text-black" @click="openPromptModal">
                 提詞機
             </button>
@@ -599,62 +539,6 @@
     </div>
 </div>
 
-
-<!-- setting modal -->
-<dialog id="settingModal" class="modal modal-end">
-    <div class="modal-box h-7/10 w-8/10 flex flex-col bg-neutral-100">
-        <div class="flex flex-col justify-center">
-            <span class="text-xl text-gray-900 text-center">AI 角色設定</span>
-            <div class="divider divider-primary"></div>
-        </div>
-        <div class="h-8/10 w-10/10 flex flex-col overflow-y-auto">
-            <div class="text-gray-900 text-center">
-                國家:
-            </div>
-            <div class="flex flex-row justify-center gap-2">            
-                <label class="label text-gray-900 ">
-                    <input type="radio" class="radio radio-primary" value="Korea" v-model="currentAiRole.nation" />
-                    韓國 
-                </label>
-                <label class="label text-gray-900">
-                    <input type="radio" class="radio radio-primary" value="Japan" v-model="currentAiRole.nation" />
-                    日本
-                </label>
-                <label class="label text-gray-900">
-                    <input type="radio" class="radio radio-primary" value="Taiwan" v-model="currentAiRole.nation" />
-                    台灣
-                </label>
-            </div>
-            <div class="divider"></div>
-            <div class="text-gray-900 text-center">
-                性別:
-            </div>
-            <div class="flex flex-row justify-center gap-2">
-                <label class="label text-gray-900">
-                    <input type="radio" class="radio radio-secondary" value="male" v-model="currentAiRole.gender" />
-                    Boy
-                </label>
-                <label class="label text-gray-900">
-                    <input type="radio" class="radio radio-secondary" value="female" v-model="currentAiRole.gender" />
-                    Girl
-                </label>
-            </div>
-        </div>
-        <div class="divider divider-primary"></div>
-        <div class="modal-action px-10">
-            <button class="btn w-1/2 bg-gray-900 text-gray-200 hover:bg-yellow-300 hover:text-gray-900" @click="closeSettingModal">
-                關閉
-            </button>
-
-            <button class="btn w-1/2 bg-gray-200 text-gray-900 hover:bg-yellow-300" @click="changeAiRole">
-                儲存
-            </button>
-        </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
-</dialog>
 
 <!-- prompt modal -->
 <dialog id="promptModal" class="modal modal-end">
