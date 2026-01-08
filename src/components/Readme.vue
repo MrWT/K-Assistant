@@ -44,8 +44,7 @@
 
     <div class="w-1/1 h-1/1 overflow-y-auto">
         <div class="w-1/1 flex flex-col p-2 bg-blue-900 text-3xl text-center text-white font-blak rounded-xl sticky top-0 z-[50]">
-            <span>K-Assistant</span>
-            <span>您的資料管理助理</span>
+            <span>您的個人助理</span>
         </div>
         <div class="divider divider-primary"></div>
 
