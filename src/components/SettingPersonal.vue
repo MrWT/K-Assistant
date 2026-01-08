@@ -20,15 +20,12 @@
         app_title: "",
         language: "",
         role: "",
+        ai_role: {},
     });
-    // language radio group 控制項
-    let languageRadioParam = reactive({
-        radioGroupName: 'rgLang', // 一致的 name 属性
-        options: [
-            { label: '英文', value: 'EN' },
-            { label: '繁體中文', value: 'ZH_TW' }
-        ],
-        selectedOption: 'EN' // 預設選項
+
+    let aiRoleObj = reactive({
+        nation: "TAIWAN",
+        gender: "GIRL",
     });
 
     // 初始化 component
@@ -57,31 +54,20 @@
                 userObj["app_title"] = values[0].app_title;
                 userObj["language"] = values[0].language;
                 userObj["role"] = values[0].role;
-
-                languageRadioParam["selectedOption"] = values[0].language;
+                userObj["ai_role"] = values[0].ai_role;
             }
         });
     }
-    // 儲存個人資料
-    function saveUser(){
-        console.log("saveUser.userObj=", userObj);
-        console.log("saveUser.languageRadioParam=", languageRadioParam);
+    // 儲存資料
+    function saveData(){
+        console.log("saveData.userObj=", userObj);
 
-        let postData = [{
-            account: userObj["account"],
-            name: userObj["name"],
-            mail: userObj["mail"],
-            app_title: userObj["app_title"],
-            language: languageRadioParam["selectedOption"],
-            role: userObj["role"],
-        }];
-
-        let saveUserPromise = fetchData({
+        let savePromise_user = fetchData({
             api: "save_users",
-            data: postData
+            data: userObj
         });
-        Promise.all([saveUserPromise]).then((values) => {
-            console.log("saveUserPromise.values=", values);
+        Promise.all([savePromise_user]).then((values) => {
+            console.log("savePromise_user.values=", values);
 
             if(values[0]["result"] === true){
                 // 將 message 傳給 App.vue 
@@ -100,34 +86,78 @@
 </script>
 
 <template>
-
-    <div class="w-1/1 text-center text-3xl">
+    <div class="divider divider-primary">
         個人資料設定
     </div>
-    <div class="divider divider-primary"></div>
-
-    <div class="w-1/1 flex flex-col gap-2 p-5">
-        <div class="w-1/1 flex flex-row gap-2">
-            <label class="label flex-none">姓名:</label>
-            <input type="text" class="input flex-1" v-model="userObj.name" />
+    <div class="w-1/1 flex flex-col gap-2 p-2">
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">姓名:</span>
+            <input type="text" class="input flex-1 border rounded-xl px-2" v-model="userObj.name" />
         </div>
 
-        <div class="w-1/1 flex flex-row gap-2">
-            <label class="label flex-none">Mail:</label>
-            <input type="text" class="input flex-1" v-model="userObj.mail" />
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">Mail:</span>
+            <input type="text" class="input flex-1 border rounded-xl px-2" v-model="userObj.mail" />
         </div>
 
-        <div class="w-1/1 flex flex-row gap-2">
-            <label class="label flex-none">App 名稱: </label>
-            <input type="text" class="input flex-1" v-model="userObj.app_title" />
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">App 名稱:</span>
+            <input type="text" class="input flex-1 border rounded-xl px-2" v-model="userObj.app_title" />
         </div>
 
-        <div class="w-1/1 flex flex-col">
-            <label class="label">慣用語言:</label>
-            <div class="w-1/1 flex flex-row gap-2">
-                <label v-for="option in languageRadioParam.options" :key="option.value">
-                    <input type="radio" class="radio" :value="option.value" :name="languageRadioParam.radioGroupName" v-model="languageRadioParam.selectedOption">
-                    {{ option.label }}
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">慣用語言:</span>
+            <div class=" flex-1 flex flex-row gap-2">
+                <label class="label text-gray-900 ">
+                    <input type="radio" class="radio radio-primary" value="KOREA" v-model="userObj.language" />
+                    繁體中文 
+                </label>
+                <label class="label text-gray-900">
+                    <input type="radio" class="radio radio-primary" value="JAPAN" v-model="userObj.language" />
+                    英文
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="divider divider-primary">
+        AI 資料設定
+    </div>
+    <div class="w-1/1 flex flex-col gap-2 p-2">
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">姓名:</span>
+            <input type="text" class="input flex-1 border rounded-xl px-2" v-model="userObj.ai_role.name" />
+        </div>
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">Logo 名:</span>
+            <input type="text" class="input flex-1 border rounded-xl px-2" v-model="userObj.ai_role.short_name" />
+        </div>
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">國家:</span>
+            <div class="flex-1 flex flex-row justify-left gap-2">            
+                <label class="label text-gray-900 ">
+                    <input type="radio" class="radio radio-primary" value="KOREA" v-model="userObj.ai_role.nation" />
+                    韓國 
+                </label>
+                <label class="label text-gray-900">
+                    <input type="radio" class="radio radio-primary" value="JAPAN" v-model="userObj.ai_role.nation" />
+                    日本
+                </label>
+                <label class="label text-gray-900">
+                    <input type="radio" class="radio radio-primary" value="TAIWAN" v-model="userObj.ai_role.nation" />
+                    台灣
+                </label>
+            </div>
+        </div>
+        <div class="w-1/1 flex flex-row items-center gap-2">
+            <span class="flex-none">性別:</span>
+            <div class="flex-1 flex flex-row justify-left gap-2">
+                <label class="label text-gray-900">
+                    <input type="radio" class="radio radio-secondary" value="BOY" v-model="userObj.ai_role.gender" />
+                    Boy
+                </label>
+                <label class="label text-gray-900">
+                    <input type="radio" class="radio radio-secondary" value="GIRL" v-model="userObj.ai_role.gender" />
+                    Girl
                 </label>
             </div>
         </div>
@@ -138,7 +168,7 @@
         <button class="btn bg-gray-900 text-gray-100 hover:bg-yellow-200 hover:text-gray-900 w-1/2" @click="closeModal">
             關閉
         </button>
-        <button class="btn bg-gray-200 text-gray-900 w-1/2 hover:bg-yellow-200" @click="saveUser">
+        <button class="btn bg-gray-200 text-gray-900 w-1/2 hover:bg-yellow-200" @click="saveData">
             儲存
         </button>
     </div>
