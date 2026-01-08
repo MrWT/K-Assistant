@@ -61,7 +61,6 @@
         ],
         type: [
             { value: "news", text: "新聞", },
-            { value: "sport", text: "賽況", },
             { value: "business", text: "市場", },
         ],
     });
@@ -287,7 +286,7 @@
     }
     // 組合提詞
     function combinePrompt(){
-        let c_prompt = "整理出";
+        let c_prompt = "幫我整理以下資料\n";
         /*
         console.log("combinePrompt.promptNation=", promptNation.value);
         console.log("combinePrompt.promptScope=", promptScope.value);
@@ -309,7 +308,7 @@
                         case "6month": stDate = moment().add(-6, "M").format("YYYY-MM-DD"); break;
                         case "1year": stDate = moment().add(-12, "M").format("YYYY-MM-DD"); break;
                     }
-                    c_prompt += " " + stDate + "~" + today + " ";
+                    c_prompt += "<時間>" + stDate + "~" + today + "</時間>" + "\n";
                 }
             });
         }
@@ -317,26 +316,23 @@
         if(promptNation.value){
             promptOptions.nation.forEach((nationObj, act_i) => {
                 if(promptNation.value === nationObj.value){
-                    c_prompt += nationObj.text;
+                    c_prompt += "<國家>" + nationObj.text + "</國家>" + "\n";
                 }
             });
         }
 
-        if(promptScope.value){
-            promptOptions.scope.forEach((scopeObj, act_i) => {
-                if(promptScope.value === scopeObj.value){
-                    c_prompt += scopeObj.text;
-                }
-            });
-        }
-
-        if(promptType.value){
-            promptOptions.type.forEach((typeObj, act_i) => {
-                if(promptType.value === typeObj.value){
-                    c_prompt += typeObj.text;
-                }
-            });
-        }
+        c_prompt += "<資料主題>";
+        promptOptions.scope.forEach((scopeObj, act_i) => {
+            if(promptScope.value === scopeObj.value){
+                c_prompt += scopeObj.text;
+            }
+        });
+        promptOptions.type.forEach((typeObj, act_i) => {
+            if(promptType.value === typeObj.value){
+                c_prompt += typeObj.text;
+            }
+        });
+        c_prompt += "</資料主題>" + "\n";
 
         prompt.value = c_prompt;
     }
@@ -542,39 +538,39 @@
 
 <!-- prompt modal -->
 <dialog id="promptModal" class="modal modal-end">
-    <div class="modal-box h-10/10 max-w-10/10 flex flex-col bg-neutral-100">
+    <div class="modal-box h-1/1 w-4/5 flex flex-col bg-neutral-100">
         <div class="flex flex-col justify-center">
             <span class="text-lg text-gray-900 text-center">聊天提詞機</span>
             <div class="divider divider-primary"></div>
         </div>
-        <div class="h-3/4 md:h-4/5 w-1/1 flex flex-col overflow-y-auto gap-2 border rounded-2xl">
-            <div class="h-1/3 w-1/1 flex flex-row rounded-lg bg-state-200 px-2 gap-1 overflow-x-auto">
-                <label v-for="(nObj, n_i) in promptOptions.nation" class="label text-gray-900">
-                    <input type="radio" class="radio" :value="nObj.value" v-model="promptNation" />
-                    {{ nObj.text }}
-                </label>
+        <div class="w-1/1 flex flex-col overflow-y-auto gap-2">
+            <div class="w-1/1 flex flex-row items-center gap-1">
+                <span class="flex-none">國家:</span>
+                <select class="flex-1 border rounded-xl p-2" v-model="promptNation">
+                    <option v-for="(nObj, n_i) in promptOptions.nation" :value="nObj.value">{{ nObj.text }}</option>
+                </select>
             </div>
-            <div class="h-1/3 w-1/1 flex flex-row rounded-lg bg-stone-200 px-2 gap-1 overflow-x-auto">
-                <label v-for="(sObj, s_i) in promptOptions.scope" class="label text-gray-900">
-                    <input type="radio" class="radio" :value="sObj.value" v-model="promptScope" />
-                    {{ sObj.text }}
-                </label>
+            <div class="w-1/1 flex flex-row items-center gap-1">
+                <span class="flex-none">資料主題:</span>
+                <select class="flex-1 border rounded-xl p-2" v-model="promptScope">
+                    <option v-for="(sObj, s_i) in promptOptions.scope" :value="sObj.value">{{ sObj.text }}</option>
+                </select>
             </div>
-            <div class="h-1/3 w-1/1 flex flex-row rounded-lg bg-state-200 px-2 gap-1 overflow-x-auto">
-                <label v-for="(tObj, t_i) in promptOptions.time" class="label text-gray-900">
-                    <input type="radio" class="radio" :value="tObj.value" v-model="promptTime" />
-                    {{ tObj.text }}
-                </label>
+            <div class="w-1/1 flex flex-row items-center gap-1">
+                <span class="flex-none">類型:</span>
+                <select class="flex-1 border rounded-xl p-2" v-model="promptType">
+                    <option v-for="(tObj, t_i) in promptOptions.type" :value="tObj.value">{{ tObj.text }}</option>
+                </select>
             </div>
-            <div class="h-1/3 w-1/1 flex flex-row rounded-lg bg-stone-200 px-2 gap-1 overflow-x-auto">
-                <label v-for="(tObj, t_i) in promptOptions.type" class="label text-gray-900">
-                    <input type="radio" class="radio" :value="tObj.value" v-model="promptType" />
-                    {{ tObj.text }}
-                </label>
+            <div class="w-1/1 flex flex-row items-center gap-1">
+                <span class="flex-none">時間:</span>
+                <select class="flex-1 border rounded-xl p-2" v-model="promptTime">
+                    <option v-for="(tObj, t_i) in promptOptions.time" :value="tObj.value">{{ tObj.text }}</option>
+                </select>
             </div>
-        </div>
 
-        <textarea class="textarea h-1/4 md:h-1/5 w-1/1 mt-1 bg-gray-900 text-gray-100" placeholder="想說點什麼嗎??" v-model="prompt"></textarea>
+            <textarea class="textarea w-1/1 h-40 mt-1 bg-gray-900 text-gray-100" placeholder="想說點什麼嗎??" v-model="prompt"></textarea>
+        </div>
 
         <div class="divider divider-primary"></div>
         <div class="modal-action px-10">
