@@ -21,7 +21,6 @@
 
     });
 
-    let appState = ref("");
     let userMessage = ref("");
     let chatState = ref("TALKING");
     // 聊天室 UUID
@@ -29,6 +28,12 @@
     let messages = reactive([]);
     let userInfo = reactive({});
     let aiRole = reactive({});
+    // 學習範本
+    let samples = reactive([
+        "關於'Gogoro'的英文學習",
+        "關於'我的完美秘書'的韓文學習",
+        "關於'NBA'的英文學習",
+    ]);
 
     // 初始化 component
     function init(){
@@ -39,7 +44,7 @@
 
         fetchInitData();
         userMessage.value = "Hi";
-        chat();
+        learn();
     }
     // 取得初始資料
     function fetchInitData(){
@@ -52,13 +57,14 @@
         });
         Promise.all([fetchUserInfoPromise]).then((values) => {
             console.log("fetchInitData.values=", values);
-            userInfo = values[1];
+            userInfo = values[0];
+            // ai role 資料
             aiRole = values[0]["ai_role"];
         });
     }
-    // chat with ai
-    function chat(){
-        console.log("chat.message=" + userMessage.value);
+    // learn with ai
+    function learn(){
+        console.log("learn.message=" + userMessage.value);
         // 關閉全部 modal
         closeAllModal();
         
@@ -69,8 +75,8 @@
             chatBoxElement.scrollTop = chatBoxElement.scrollHeight;
         }
 
-        let chatPromise = fetchData({
-            api: "chat",
+        let learnPromise = fetchData({
+            api: "learn",
             data: {
                 account: props.account,
                 chat_room_uuid: chat_room_uuid.value,
@@ -78,8 +84,8 @@
                 time: moment().format("YYYY-MM-DD HH:mm:ss"),
             }
         }, "AI");
-        Promise.all([chatPromise]).then((values) => {
-            console.log("chatPromise.values=", values);
+        Promise.all([learnPromise]).then((values) => {
+            console.log("learnPromise.values=", values);
 
             chat_room_uuid.value = values[0]["chat_room_uuid"];
             let ai_role = "AI";
@@ -146,17 +152,31 @@
             sent_success: false, // 預設視為"訊息未傳遞成功"
         });
 
-        chat();
+        closeAllModal();
+        learn();
     }
     // 重傳上一個訊息
     function send_again(re_msg){
         userMessage.value = re_msg;
         send();
+    }
+    // 開啟 prompt modal
+    function openPromptModal(){
+        document.getElementById("promptModal").show();
+    }
+    // 關閉 prompt modal
+    function closePromptModal(){
+        document.getElementById("promptModal").close();
     }      
+    // 複製學習範本
+    function copyPrompt(prompt){
+        userMessage.value = prompt;
+        closePromptModal();
+    }
     
     // 關閉全部 modal
     function closeAllModal(){
-
+        closePromptModal();
     }
 
 </script>
@@ -172,10 +192,17 @@
                 <input class="input w-1/1 rounded-xl" v-model="userMessage" placeholder="想學習什麼呢?" :disabled="chatState === 'TALKING'" />
             </div>
             <div class="flex-none p-1 flex flex-row items-center gap-1">
+                <a v-if="chatState !== 'TALKING'" class="cursor-pointer text-gray-500 hover:text-gray-900" @click="openPromptModal">
+                    <span>
+                        <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h8m-8 6h8m-8 6h8M4 16a2 2 0 1 1 3.321 1.5L4 20h5M4 5l2-1v6m-2 0h4"/>
+                        </svg>
+                    </span>
+                </a>
                 <a class="cursor-pointer text-gray-500 hover:text-gray-900" @click="send">
                     <span v-if="chatState !== 'TALKING'">
                         <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+                            <path stroke="currentColor" stroke-linejoin="round" d="m17 13 3.4641-2V7L17 5l-3.4641 2v4M17 13l-3.4641-2M17 13v4l-7.00001 4M17 13V9m0 4-7.00001 4m3.53591-6L10.5 12.7348M9.99999 21l-3.4641-2.1318M9.99999 21v-4m-3.4641 2v-.1318m0 0V15L10.5 12.7348m-3.96411 6.1334L3.5 17V5m0 0L7 3l3.5 2m-7 0 2.99999 2M10.5 5v7.7348M10.5 5 6.49999 7M17 9l3.5-2M17 9l-3.5-2M9.99999 17l-3.5-2m0 .5V7"/>
                         </svg>
                     </span>
                     <span v-if="chatState === 'TALKING'" class="loading loading-spinner loading-md"></span>
@@ -248,6 +275,42 @@
         </div>
     </div>
 </div>
+
+<!-- prompt modal -->
+<dialog id="promptModal" class="modal modal-end">
+    <div class="modal-box h-1/1 w-4/5 flex flex-col bg-neutral-100">
+        <div class="flex flex-col justify-center">
+            <span class="text-lg text-gray-900 text-center">學習範本</span>
+            <div class="divider divider-primary"></div>
+        </div>
+        <div class="w-1/1 flex flex-col overflow-y-auto gap-2">
+
+            <ul class="list bg-base-100 h-1/1 rounded-box shadow-md">
+                <li v-for="(sample, sample_i) in samples" class="list-row">
+                    <div class="text-4xl font-thin opacity-30 tabular-nums">
+                        {{ ( (sample_i + 1) < 10 ? "0" : "" ) + (sample_i + 1) }}
+                    </div>
+                    <div class="list-col-grow">
+                        <div class="text-lg">{{ sample }}</div>
+                    </div>
+                    <button class="btn btn-square btn-ghost" title="複製" @click="copyPrompt(sample)">
+                        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"><path d="M6 3L20 12 6 21 6 3z"></path></g></svg>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="divider divider-primary"></div>
+        <div class="modal-action flex flex-row justify-center">
+            <button class="btn w-1/2 bg-gray-900 text-gray-200 hover:bg-yellow-300 hover:text-gray-900" @click.stop="closePromptModal">
+                關閉
+            </button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
 
 </template>
 
