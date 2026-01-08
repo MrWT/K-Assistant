@@ -19,6 +19,7 @@
     import TripSchedule from './components/TripSchedule.vue'
     import Recollection from './components/Recollection.vue'
     import Achievement from './components/Achievement.vue'
+    import Learning from './components/Learning.vue'
 
     onMounted(() => {
         console.log("App mounted.");
@@ -55,6 +56,7 @@
         funcs: [],
         languages: {},
         focus_news_topic: null,
+        ai_role: {},
     });
     // Popup Message
     let opObj = reactive({
@@ -201,6 +203,7 @@
                     userInfo.role = userInfoObj["role"];
                     userInfo.funcs = userInfoObj["function"];
                     userInfo.focus_news_topic = userInfoObj["focus_news_topic"];
+                    userInfo.ai_role = userInfoObj["ai_role"];
                     appSetting.title = userInfoObj["app_title"];
                 }
 
@@ -221,7 +224,7 @@
                 {
                     appSetting.funButtons.splice(0, appSetting.funButtons.length);
 
-                    let allFunctionKeys = ["finance", "chat", "imagen", "plan_trip", "trip_schedule", "footmark", "recollection", "achievement"];
+                    let allFunctionKeys = ["finance", "chat", "learning", "imagen", "plan_trip", "trip_schedule", "footmark", "recollection", "achievement"];
                     let buildingFunctionKeys = [];
                     allFunctionKeys.forEach((funKey, fk_i) => {
                         if(userInfo.funcs.indexOf(funKey) >= 0){
@@ -356,6 +359,8 @@
         <TripSchedule v-else-if="appSetting.contentComponent === 'trip_schedule'" :title="appSetting.title" :account="userInfo.account" :googleMapApiKey="appSetting.googleMapApiKey" @popup-message="popupMessage" />
         <Recollection v-else-if="appSetting.contentComponent === 'recollection'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <Achievement v-else-if="appSetting.contentComponent === 'achievement'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" />
+        <Learning v-else-if="appSetting.contentComponent === 'learning'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
+        
     </div>
 
     <!-- userInfo modal -->
@@ -396,7 +401,7 @@
 
     <!-- set user data modal -->
     <dialog v-if="userInfo.account" id="setUserDataModal" class="modal modal-top">
-        <div class="modal-box bg-white rounded-box p-2 w-1/1 h-4/5">
+        <div class="modal-box bg-white rounded-box p-2 w-1/1 h-5/6">
             <SettingPersonal :account="userInfo.account" @modal-status="modalStatus" />
         </div>
     </dialog>
