@@ -486,7 +486,7 @@
                 {{ msgObj.speaker }}
                 <time class="text-xs opacity-70">{{ msgObj.time }}</time>
             </div>
-            <div class="chat-bubble  flex flex-row items-center">
+            <div class="chat-bubble  flex flex-row items-center gap-2">
                 <!-- 訊息傳遞中 -->
                 <a v-if="msgObj.role === 'user' && chatState === 'TALKING'">
                     <span class="loading loading-ring loading-xs"></span>
