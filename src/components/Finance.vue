@@ -18,52 +18,41 @@
 
     let appState = ref("");
     let progressSetting = reactive({
-        house: {
-            value: null,
-            max: null,
-            targetText: "",
-            progressText: "",
-        },
-        credit: {
-            value: null,
-            max: null,
-            targetText: "",
-            progressText: "",
-            remainText: "",
-            remainValue: null,
-        },
         speed: {
             target: 0,
             speed: 0,
             perMonth: 0,
         },
     });
+    let total_assets = ref(0);
     let deposit_TWD = ref(0);
-    let deposit_USD_insurance = ref(0);
-    let deposit_LikeTWD_insurance = ref(0);
-    let deposit_USD_fixed = ref(0);
-    let deposit_LikeTWD_fixed = ref(0);
-    let stock_USD = ref(0);
-    let stock_LikeTWD = ref(0);
 
-    let usd_currency = ref(0);
+    let house = reactive({
+        remark: "",
+        original:{
+            unit_price: 0,
+            price: 0,
+        },
+        now: {
+            unit_price: 0,
+            price: 0,
+        }
+    });
 
-    let stockTW = reactive({
+    let stock = reactive({
         totalValue: "",
         totalTWD: "",
-        tw0056: "",
-        tw0056_TWD: "",
+        tw0056: {
+            amount: 0,
+            unit_price: 0,
+            price: 0,
+        },
     });
 
     let areaBlockStatus = reactive({
         speed: false,
-        stock_twd: false,
-        credit: false,
-        house: false,
-        deposit_usd: false,
-        insurance_usd: false,
-        fixed_usd: false,
-        stock_usd: false,
+        house: true,
+        stock: false,
     });
 
     // 初始化 component
@@ -74,40 +63,16 @@
         console.log("props.user_role=" + props.user_role);
 
         if(props.account){
+            total_assets.value = 0;
             // 取得使用者個人 finance 資料
             fetchFinance();
         }
     }
     // 取得使用者個人 finance 資料
     function fetchFinance(){
-        // 當下匯率
-        {
-            let fetchPromise_currency = fetchData({
-                api: "get_answer",
-                data: {
-                    question: "美元兌台幣的匯率, 只給我匯率數字就好",
-                }
-            }, "AI");
-            Promise.all([fetchPromise_currency]).then((values) => {
-                console.log("當下匯率=", values);
-
-                let currency = 0;
-                try
-                {
-                    let jsonStr_ans = values[0].replace(/```json/g, "");
-                    let jsonObj_ans = JSON.parse(jsonStr_ans);
-                    currency = parseFloat( jsonObj_ans["answer"] );
-                }
-                catch(ex){
-                    currency = 30.0;
-                }
-                usd_currency.value = currency;
-            });
-        }
-
         // 台股資訊
         {
-            areaBlockStatus.stock_twd = false;
+            areaBlockStatus.stock = false;
             // 0056
             let fetchPromise_0056 = fetchData({
                 api: "get_finance",
@@ -144,7 +109,7 @@
                 }
 
                 let stockDatas_TWD = [finObj_0056];
-                buildStockTW(stockDatas_TWD);
+                buildStock(stockDatas_TWD);
             });
         }
 
@@ -178,100 +143,11 @@
                 buildSpeedBlock(values[0][0]);
             });
         }
-
-        // 信貸資訊
-        {
-            areaBlockStatus.credit = false;
-
-            let fetchPromise_credit = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "credit",
-                }
-            });
-            let fetchPromise_deposit = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "deposit",
-                }
-            });
-            Promise.all([fetchPromise_credit, fetchPromise_deposit]).then((values) => {
-                console.log("信貸資訊=", values);
-                buildCreditBlock(values[0][0], values[1][0]);
-            });
-        }
         
-    }
-    // 取得使用者個人 finance 資料 - 美金相關
-    function fetchFinance_usd(){
-        // 奈米投資訊
-        {
-            areaBlockStatus.stock_usd = false;
-
-            let fetchPromise_nano = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "stock_nano",
-                }
-            });
-            Promise.all([fetchPromise_nano]).then((values) => {
-                console.log("奈米投資訊=", values);
-                
-                let finObj = values[0][0];
-                // 當下匯率
-                finObj["value2"] = usd_currency.value;
-                buildStockGlobal(finObj);
-            });
-        }
-
-        // 美金存款資訊 - 保險
-        {
-            areaBlockStatus.insurance_usd = false;
-            let fetchPromise_insurance = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "deposit_insurance",
-                }
-            });
-            Promise.all([fetchPromise_insurance]).then((values) => {
-                console.log("美金存款資訊 - 保險=", values);
-
-                let finObj = values[0][0];
-                // 當下匯率
-                finObj["value2"] = usd_currency.value;
-                buildDepositUSD_insurance(finObj);
-            });
-        }
-
-        // 美金存款資訊 - 定存
-        {
-            areaBlockStatus.fixed_usd = false;
-            let fetchPromise_fixed = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "deposit_fixed",
-                }
-            });
-            Promise.all([fetchPromise_fixed]).then((values) => {
-                console.log("美金存款資訊 - 定存=", values);
-
-                let finObj = values[0][0];
-                // 當下匯率
-                finObj["value2"] = usd_currency.value;
-                buildDepositUSD_fixed(finObj);
-            });
-        }
-
-        // 購屋資訊
+        // 房屋資訊
         {
             areaBlockStatus.house = false;
-
-            // 購屋目標
+            // house
             let fetchPromise_house = fetchData({
                 api: "get_finance",
                 data: {
@@ -279,89 +155,46 @@
                     f_name: "house",
                 }
             });
-            // 保險 - 美金計價
-            let fetchPromise_insurance = fetchData({
-                api: "get_finance",
+            let fetchPromise_unit_price = fetchData({
+                api: "get_answer",
                 data: {
-                    account: props.account,
-                    f_name: "deposit_insurance",
+                    question: "幫我找找'合恆寓紳鄰-曙光'的單坪價錢, 只給我單坪價錢數字就好",
                 }
-            });
-            // 定存 - 美金計價
-            let fetchPromise_fixed = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "deposit_fixed",
+            }, "AI");
+            Promise.all([fetchPromise_house, fetchPromise_unit_price]).then((values) => {
+                console.log("房屋資訊=", values);
+
+                // house
+                let finObj_house = values[0][0];
+
+                // 最新單坪價錢
+                let now_unit_price = 0;
+                {
+                    try
+                    {
+                        let jsonStr_ans = values[1].replace(/```json/g, "");
+                        let jsonObj_ans = JSON.parse(jsonStr_ans);
+
+                        if(jsonObj_ans["answer"].indexOf("萬") >= 0){
+                            now_unit_price = jsonObj_ans["answer"].replace(/萬/g, "").trim();
+                        }else{
+                            now_unit_price = jsonObj_ans["answer"].trim();
+                        }
+                        now_unit_price = parseFloat( now_unit_price ) * 10000;
+                    }
+                    catch(ex){
+                        now_unit_price = 0;
+                    }
+
+                    console.log("最新單坪價錢=" + now_unit_price);
                 }
-            });
-            // 奈米投 - 美金計價
-            let fetchPromise_nano = fetchData({
-                api: "get_finance",
-                data: {
-                    account: props.account,
-                    f_name: "stock_nano",
-                }
-            });
-            Promise.all([fetchPromise_house, fetchPromise_insurance, fetchPromise_fixed, fetchPromise_nano]).then((values) => {
-                console.log("購屋資訊=", values);
 
-                let finObj_insurance = values[1][0];
-                let finObj_fixed = values[2][0];
-                let finObj_nano = values[3][0];
+                buildHouse(finObj_house, now_unit_price);
 
-                finObj_insurance["value2"] = usd_currency.value;
-                finObj_fixed["value2"] = usd_currency.value;
-                finObj_nano["value2"] = usd_currency.value;
-
-                buildHouseBlock(values[0][0], finObj_insurance, finObj_fixed, finObj_nano);
+                areaBlockStatus.house = true;
             });
         }
-    }
-    // 建立"購屋進度"區塊
-    function buildHouseBlock(houseObj, depositObj_USD_insurance, depositObj_USD_fixed, stockData_USD){
-        let targetValue = houseObj["value1"];
-        let currentValue = depositObj_USD_insurance["value1"] * depositObj_USD_insurance["value2"] 
-                        + depositObj_USD_fixed["value1"] * depositObj_USD_fixed["value2"] 
-                        + stockData_USD["value1"] * stockData_USD["value2"];
-        currentValue = Math.floor( currentValue );
 
-        progressSetting.house.max = 100;
-        progressSetting.house.value = Math.floor( currentValue * 100 / (targetValue * 0.3) );
-
-        progressSetting.house.targetText = "購屋目標: " + (new Intl.NumberFormat().format(targetValue));
-        progressSetting.house.progressText = "";
-        progressSetting.house.progressText += "進度: ";
-        progressSetting.house.progressText += (new Intl.NumberFormat().format(currentValue)) + " / ";
-        progressSetting.house.progressText += (new Intl.NumberFormat().format(targetValue * 0.3)) + "( 粗估三成 )";
-        progressSetting.house.progressText += " = " + progressSetting.house.value + "%";
-
-        areaBlockStatus.house = true;
-    }
-    // 建立"還款進度"區塊
-    function buildCreditBlock(creditObj, depositObj_TWD){
-        let targetValue = creditObj["value1"];
-        let currentValue = creditObj["value2"];
-        let depositValue = depositObj_TWD["value1"];
-
-        progressSetting.credit.max = 100;
-        progressSetting.credit.value = Math.floor( (targetValue - currentValue) * 100 / targetValue );
-
-        progressSetting.credit.targetText = "還款目標: " + (new Intl.NumberFormat().format(targetValue));
-        progressSetting.credit.progressText = "";
-        progressSetting.credit.progressText += "進度: ";
-        progressSetting.credit.progressText += (new Intl.NumberFormat().format(targetValue - currentValue)) + " / ";
-        progressSetting.credit.progressText += (new Intl.NumberFormat().format(targetValue));
-        progressSetting.credit.progressText += "=" + progressSetting.credit.value + "%";
-
-        progressSetting.credit.remainValue = Math.floor((targetValue - (currentValue - depositValue))*100 / targetValue);
-        progressSetting.credit.remainText = "";
-        progressSetting.credit.remainText += "剩餘: " + (new Intl.NumberFormat().format(currentValue))
-                                                + "-" + (new Intl.NumberFormat().format(depositValue))
-                                                + "=" + (new Intl.NumberFormat().format(currentValue - depositValue)) + "";
-        progressSetting.credit.remainText += "( " + progressSetting.credit.remainValue + "% )";
-
-        areaBlockStatus.credit = true;
     }
     // 建立"存款速度"區塊
     function buildSpeedBlock(depositData){
@@ -382,16 +215,16 @@
 
         progressSetting["speed"]["target"] = Math.floor( targetValue / 10000 );
         progressSetting["speed"]["speed"] = speed;
-        progressSetting["speed"]["perMonth"] = (new Intl.NumberFormat().format(valuePerMonth)); 
-        progressSetting["speed"]["per3Month"] = (new Intl.NumberFormat().format(valuePer3Month)); 
-        progressSetting["speed"]["twdValuePer3Month"] = (new Intl.NumberFormat().format(twdValuePer3Month));
-        progressSetting["speed"]["stockValuePer3Month"] = (new Intl.NumberFormat().format(stockValuePer3Month));
+        progressSetting["speed"]["perMonth"] = valuePerMonth; 
+        progressSetting["speed"]["per3Month"] = valuePer3Month;
+        progressSetting["speed"]["twdValuePer3Month"] = twdValuePer3Month;
+        progressSetting["speed"]["stockValuePer3Month"] = stockValuePer3Month;
 
         areaBlockStatus.speed = true;
     }
     // 建立"台灣股票"區塊
-    function buildStockTW(stockDatas){
-        console.log("buildStockTW.stockDatas=", stockDatas);
+    function buildStock(stockDatas){
+        console.log("buildStock.stockDatas=", stockDatas);
 
         let stockTotalValue = 0;
         let stockTotalTWD = 0;
@@ -408,56 +241,47 @@
             stockTotalTWD += (dataObj["value1"] * dataObj["value2"]);
             switch(dataObj["name"]){
                 case "stock_0056":
-                    stockTW.tw0056 = new Intl.NumberFormat().format( dataObj["value1"] );
-
-                    let twd_value_0056 = Math.floor( dataObj["value1"] * dataObj["value2"] );
-                    stockTW.tw0056_TWD = new Intl.NumberFormat().format( twd_value_0056 );
+                    stock.tw0056.amount = dataObj["value1"];
+                    stock.tw0056.unit_price = dataObj["value2"];
+                    stock.tw0056.price = Math.floor( dataObj["value1"] * dataObj["value2"] );
+                    // 累計總資產
+                    total_assets.value += Math.floor( dataObj["value1"] * dataObj["value2"] );
                     break;
             }
         });
-        stockTW.totalValue = new Intl.NumberFormat().format(stockTotalValue);
-        stockTW.totalTWD = new Intl.NumberFormat().format( Math.floor( stockTotalTWD ) );
+        stock.totalValue = stockTotalValue
+        stock.totalTWD = Math.floor( stockTotalTWD )
 
-        areaBlockStatus.stock_twd = true;
-    }
-    // 建立"全球股票"區塊
-    function buildStockGlobal(stockData){
-        //console.log("buildStockGlobal.stockData=", stockData);
-        stock_USD.value = new Intl.NumberFormat('en-US').format(stockData["value1"]);
-
-        let likeTWD = Math.floor( stockData["value1"] * stockData["value2"] );
-        stock_LikeTWD.value = new Intl.NumberFormat('en-US').format(likeTWD);
-
-        areaBlockStatus.stock_usd = true;
-
+        areaBlockStatus.stock = true;
     }
     // 建立"台幣存款"區塊
     function buildDepositTWD(depositData){
         console.log("buildDepositTWD.depositData=", depositData);
 
-        deposit_TWD.value = new Intl.NumberFormat('en-US').format(depositData["value1"]);
+        deposit_TWD.value = depositData["value1"];
+
+        // 累計總資產
+        total_assets.value += depositData["value1"];
     }
-    // 建立"美金存款"區塊-保險
-    function buildDepositUSD_insurance(depositData){
-        //console.log("buildDepositUSD_insurance.depositData=", depositData);
-        deposit_USD_insurance.value = new Intl.NumberFormat('en-US').format(depositData["value1"]);
+    // 建立"房屋資產"區塊
+    function buildHouse(houseData, now_unit_price){
+        console.log("buildHouse.houseData=", houseData);
+        console.log("buildHouse.now_unit_price=", now_unit_price);
 
-        let likeTWD = Math.floor( depositData["value1"] * depositData["value2"] );
-        deposit_LikeTWD_insurance.value = new Intl.NumberFormat('en-US').format(likeTWD);
+        house.remark = houseData.remark;
+        house.original.price = houseData.value1;
+        house.original.unit_price = houseData.value2;
 
-        areaBlockStatus.insurance_usd = true;
+        house.now.unit_price = now_unit_price;
+        house.now.price = parseFloat( houseData.remark ) * house.now.unit_price;
+
+        // 實際購買後才算數
+        house.now.price = 0;
+
+        // 累計總資產
+        total_assets.value += house.now.price;
     }
-    // 建立"美金存款"區塊-定存
-    function buildDepositUSD_fixed(depositData){
-        //console.log("buildDepositUSD_fixed.depositData=", depositData);
-        deposit_USD_fixed.value = new Intl.NumberFormat('en-US').format(depositData["value1"]);
-
-        let likeTWD = Math.floor( depositData["value1"] * depositData["value2"] );
-        deposit_LikeTWD_fixed.value = new Intl.NumberFormat('en-US').format(likeTWD);
-
-        areaBlockStatus.fixed_usd = true;
-    }
-
+    
     // 開啟 setting modal
     function openSettingModal(){
         document.getElementById("settingModal").showModal();
@@ -479,16 +303,12 @@
         closeSettingModal();
     }
 
-    // 監聽
-    watch(usd_currency, (newValue, oldValue) => {
-        fetchFinance_usd();
-    });
-
 </script>
 
 <template>
 
 <div class="flex flex-col w-1/1 h-1/1 gap-2 overflow-y-auto">
+    <!-- 編輯財務狀況 -->
     <div v-if="props.user_role === 'admin'" class="flex flex-row justify-end w-1/1 bg-transparent rounded-xl gap-2">
         <a class="text-gray-500 hover:text-gray-900 cursor-pointer fixed top-20 right-8 z-[50]" @click="openSettingModal">
             <svg class="size-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -498,6 +318,71 @@
         </a>
     </div>
 
+    <!-- 總資產 -->
+    <div class="card bg-green-300 rounded-box grid h-3/10 w-10/10 p-5 place-items-center">
+        <div class="w-1/1 text-2xl text-center">總資產= NTD$ {{ new Intl.NumberFormat('en-US').format(total_assets) }}</div>
+    </div>
+
+    <div class="divider">( NTD 計價 )</div>
+    <!-- 存款 -->
+    <div class="card bg-base-300 rounded-box grid h-3/10 w-10/10 p-5 place-items-center">
+        <div class="w-1/1 text-2xl text-center">現金=NTD$ {{ new Intl.NumberFormat('en-US').format(deposit_TWD) }}</div>
+    </div>
+
+    <!-- 房屋價值 -->
+    <div v-if="areaBlockStatus.house" class="card bg-gray-300 rounded-box grid h-10/10 w-10/10 p-5 place-items-start mt-1">
+        <span class="text-2xl w-1/1 underline text-center"
+              :class="{ 'bg-green-300': house.now.price > house.original.price, 
+                        'bg-transparent': house.now.price === house.original.price,
+                        'bg-red-300': house.now.price < house.original.price }">
+            房屋價值
+        </span>
+        <span class="text-xl w-1/1">
+            ( 尚未購買, 故還沒有實質產生價值 )<br />
+            現有價值: NTD$ {{ new Intl.NumberFormat('en-US').format( house.now.price ) }} 
+        </span>
+        <span class="text-lg">
+            現有單價: NTD$ {{ house.now.unit_price / 10000 }} 萬
+        </span>
+        
+        <br />
+        <span class="text-lg">坪數: {{ house.remark }}</span>
+        <br />
+        
+        <span class="text-lg">
+            購買價值: NTD$ {{ new Intl.NumberFormat('en-US').format( house.original.price ) }}
+        </span>
+        <span class="text-lg">
+            購買單價: NTD$ {{ house.original.unit_price / 10000 }} 萬
+        </span>
+    </div>
+    <div v-if="!areaBlockStatus.house" class="skeleton h-32 w-1/1"></div>
+
+    <!-- 股票價值 -->
+    <div class="divider">股票</div>
+    <div class="flex flex-col md:flex-row w-1/1 h-1/1 gap-2">
+        <div class="bg-base-300 rounded-box flex flex-col p-5 h-10/10 w-1/1 md:w-1/2 items-center">
+            <span v-if="areaBlockStatus.stock" class="h-1/1 inline-block align-middle">
+                <span class="text-2xl">總價值=NTD$ {{ new Intl.NumberFormat('en-US').format(stock.totalTWD) }}</span>
+            </span>
+            <div v-if="!areaBlockStatus.stock" class="skeleton h-32 w-1/1"></div>
+        </div>
+        <div class="h-1/1 flex content-center hidden md:block">
+            <div>=</div>
+        </div>
+        <div class="flex flex-row gap-1 w-1/1">
+            <div v-if="areaBlockStatus.stock" class="card bg-gray-300 rounded-box grid p-5 h-1/1 w-1/1 place-items-start">
+                <span class="text-2xl underline w-1/1 text-center">0056 </span> 
+                <span class="text-lg">股數: {{ new Intl.NumberFormat('en-US').format(stock.tw0056.amount) }}</span>
+                <span class="text-lg">單價(NTD): {{ new Intl.NumberFormat('en-US').format(stock.tw0056.unit_price) }}</span>
+                <span class="text-lg">股數 x 單價 = NTD$ {{ new Intl.NumberFormat('en-US').format(stock.tw0056.price) }}</span>
+            </div>
+            <div v-if="!areaBlockStatus.stock" class="skeleton h-32 w-1/1"></div>
+        </div>
+    </div>
+
+    <!-- 存款速度 -->
+    <div class="divider">存款速度</div>
     <div class="flex flex-col w-1/1 gap-2">
         <div class="flex flex-row w-1/1 h-1/1">
             <div v-if="areaBlockStatus.speed" class="card rounded-box grid h-1/1 w-1/1 p-5 place-items-center"
@@ -507,7 +392,7 @@
                           'bg-green-300': progressSetting.speed.speed <= 3}">
                 <div class="w-1/1 text-xl text-center">
                     約需 {{ progressSetting["speed"]["speed"] }} 期<br />
-                    可以存到 {{ progressSetting["speed"]["target"] }} 萬
+                    可以存到 {{ new Intl.NumberFormat('en-US').format(progressSetting["speed"]["target"]) }} 萬
                 </div>
             </div>
             <div v-if="!areaBlockStatus.speed" class="skeleton h-32 w-1/1"></div>
@@ -520,7 +405,7 @@
                           'bg-green-300': progressSetting.speed.speed <= 3}">
                 <div class="w-10/10 text-xl text-center">
                     每期(薪資+股利)約可存<br />
-                    TWD ${{ progressSetting["speed"]["per3Month"] }}
+                    NTD ${{ new Intl.NumberFormat('en-US').format(progressSetting["speed"]["per3Month"]) }}
                 </div>
                 <div v-if="!areaBlockStatus.speed" class="skeleton h-32 w-1/1"></div>
             </div>
@@ -531,7 +416,7 @@
                 <div class="card rounded-box grid h-1/1 w-1/2 p-5 place-items-center bg-base-300 ">
                     <div v-if="areaBlockStatus.speed" class="w-10/10 text-md text-center">
                         每期(薪資)約可存<br />
-                        TWD ${{ progressSetting["speed"]["twdValuePer3Month"] }}
+                        NTD ${{ new Intl.NumberFormat('en-US').format(progressSetting["speed"]["twdValuePer3Month"]) }}
                     </div>
                     <div v-if="!areaBlockStatus.speed" class="skeleton h-32 w-1/1"></div>
                 </div>
@@ -541,103 +426,13 @@
                 <div class="card rounded-box grid h-1/1 w-1/2 p-5 place-items-center bg-base-300 ">
                     <div v-if="areaBlockStatus.speed" class="w-10/10 text-md text-center">
                         每期(股利)約可存<br />
-                        TWD ${{ progressSetting["speed"]["stockValuePer3Month"] }}
+                        NTD ${{ progressSetting["speed"]["stockValuePer3Month"] }}
                     </div>
                     <div v-if="!areaBlockStatus.speed" class="skeleton h-32 w-1/1"></div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="divider">股票</div>
-    <div class="flex flex-col md:flex-row w-1/1 h-1/1 gap-2">
-        <div class="bg-base-300 rounded-box flex flex-col p-5 h-10/10 w-1/1 md:w-1/2 items-center">
-            <span v-if="areaBlockStatus.stock_twd" class="h-1/1 inline-block align-middle">
-                <span class="text-2xl">總價值(TWD): {{ stockTW.totalTWD }}</span>
-            </span>
-            <div v-if="!areaBlockStatus.stock_twd" class="skeleton h-32 w-1/1"></div>
-        </div>
-        <div class="h-1/1 flex content-center hidden md:block">
-            <div>=</div>
-        </div>
-        <div class="flex flex-row gap-1 w-1/1">
-            <div v-if="areaBlockStatus.stock_twd" class="card bg-gray-300 rounded-box grid p-5 h-1/1 w-1/1 place-items-start">
-                <span class="text-2xl">0056 </span> 
-                <span class="text-lg">股數: {{ stockTW.tw0056 }}</span>
-                <span class="text-lg">TWD: {{ stockTW.tw0056_TWD }}</span>
-            </div>
-            <div v-if="!areaBlockStatus.stock_twd" class="skeleton h-32 w-1/1"></div>
-        </div>
-    </div>
-
-    <div class="divider">TWD 計價</div>
-    <div class="card bg-base-300 rounded-box grid h-3/10 w-10/10 p-5 place-items-center">
-        <div class="w-1/1 text-2xl text-center">存款: {{ deposit_TWD }}</div>
-    </div>
-
-    <div v-if="areaBlockStatus.credit" class="card bg-base-300 rounded-box grid h-10/10 w-10/10 p-5 place-items-center mt-1">
-        <div class="flex flex-col w-10/10">
-            <span class="text-2xl">{{ progressSetting.credit.targetText }}</span>
-            <span class="text-lg">{{ progressSetting.credit.progressText }}</span>
-        </div>
-        <progress class="w-10/10 progress"
-                :class="{ 'progress-error': progressSetting.credit.value && progressSetting.credit.value < 50,
-                            'progress-warning': progressSetting.credit.value && 50 <= progressSetting.credit.value && progressSetting.credit.value < 80,
-                            'progress-info': progressSetting.credit.value && 80 <= progressSetting.credit.value && progressSetting.credit.value < 90,
-                            'progress-success': progressSetting.credit.value && 90 <= progressSetting.credit.value }"
-                :value="progressSetting.credit.value" :max="progressSetting.credit.max">
-        </progress>
-        <div class="flex flex-col w-10/10">
-            <span>{{ progressSetting.credit.remainText }}</span>
-        </div>
-        <progress class="w-10/10 progress"
-                :class="{ 'progress-error': progressSetting.credit.remainValue && progressSetting.credit.remainValue < 50,
-                            'progress-warning': progressSetting.credit.remainValue && 50 <= progressSetting.credit.remainValue && progressSetting.credit.remainValue < 80,
-                            'progress-info': progressSetting.credit.remainValue && 80 <= progressSetting.credit.remainValue && progressSetting.credit.remainValue < 90,
-                            'progress-success': progressSetting.credit.remainValue && 90 <= progressSetting.credit.remainValue }"
-                :value="progressSetting.credit.remainValue" :max="progressSetting.credit.max">
-        </progress>
-    </div>
-    <div v-if="!areaBlockStatus.credit" class="skeleton h-32 w-1/1"></div>
-
-    <div v-if="areaBlockStatus.house" class="card bg-base-300 rounded-box grid h-10/10 w-10/10 p-5 place-items-center mt-1">
-        <div class="flex flex-col w-10/10">
-            <span class="text-2xl">{{ progressSetting.house.targetText }}</span>
-            <span class="text-lg">{{ progressSetting.house.progressText }}</span>
-        </div>
-        <progress class="w-10/10 progress"
-                :class="{ 'progress-error': progressSetting.house.value && progressSetting.house.value < 50,
-                            'progress-warning': progressSetting.house.value && 50 <= progressSetting.house.value && progressSetting.house.value < 80,
-                            'progress-info': progressSetting.house.value && 80 <= progressSetting.house.value && progressSetting.house.value < 90,
-                            'progress-success': progressSetting.house.value && 90 <= progressSetting.house.value }"
-                :value="progressSetting.house.value" :max="progressSetting.house.max">
-        </progress>
-    </div>
-    <div v-if="!areaBlockStatus.house" class="skeleton h-32 w-1/1"></div>
-
-    <div class="divider">USD 計價</div>
-    
-    <div class="flex flex-col md:flex-row w-10/10 h-10/10 gap-2">
-        <div v-if="areaBlockStatus.insurance_usd === true" class="card bg-base-300 rounded-box grid h-10/10 w-10/10 md:w-5/10 p-5 place-items-center">
-            <div class="w-10/10 text-2xl">保險 USD: {{ deposit_USD_insurance }}</div>
-            <div class="w-10/10 text-lg">匯率:{{ usd_currency }} / 約 TWD: {{ deposit_LikeTWD_insurance }}</div>
-        </div>
-        <div v-if="areaBlockStatus.insurance_usd === false" class="skeleton h-32 w-1/1"></div>
-
-        <div v-if="areaBlockStatus.fixed_usd === true" class="card bg-base-300 rounded-box grid h-10/10 w-10/10 md:w-5/10 p-5 place-items-center">
-            <div class="w-10/10 text-2xl">定存 USD: {{ deposit_USD_fixed }}</div>
-            <div class="w-10/10 text-lg">匯率:{{ usd_currency }} / 約 TWD: {{ deposit_LikeTWD_fixed }}</div>
-        </div>
-        <div v-if="areaBlockStatus.fixed_usd === false" class="skeleton h-32 w-1/1"></div>
-
-        <div v-if="areaBlockStatus.stock_usd === true" class="card bg-base-300 rounded-box grid h-10/10 w-10/10 md:w-5/10 p-5 place-items-center">
-            <div class="w-10/10 text-2xl">奈米投 USD: {{ stock_USD }}</div>
-            <div class="w-10/10 text-lg">匯率:{{ usd_currency }} / 約 TWD: {{ stock_LikeTWD }}</div>
-        </div>
-        <div v-if="areaBlockStatus.stock_usd === false" class="skeleton h-32 w-1/1"></div>
-    </div>
-
-    <div class="divider"></div>
 </div>
 
 <!-- setting modal -->
