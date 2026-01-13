@@ -619,23 +619,11 @@
                 </p>
             </div>
         </div>
-        <div v-if="chatState === 'TALKING'" class="chat chat-start">
-            <div class="chat-image avatar">
-                <div class="avatar avatar-placeholder">
-                    <div class="size-8 rounded-full border-5 border-yellow-300 bg-white text-gray-900">
-                        <span class="text-xs">
-                            {{ "AI" }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="chat-header text-white">
-                {{ "AI" }}
-            </div>
-            <div class="chat-bubble">
-                好喔~ 稍等
-                <span class="loading loading-dots loading-xs"></span>
-            </div>
+        <div v-if="chatState === 'TALKING'" class="w-1/1 text-center mt-5">
+            <span class="skeleton skeleton-text text-xl text-white">
+                AI is thinking harder
+                <span class="loading loading-ring loading-xl"></span>
+            </span>
         </div>
     </div>
 </div>

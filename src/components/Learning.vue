@@ -188,21 +188,23 @@
     <!-- function button bar -->
     <div class="w-1/1 shadow-2xl flex flex-col bg-white rounded-xl">
         <div class="w-1/1 flex flex-row">
-            <div class="flex-1 p-1">
-                <input class="input w-1/1 rounded-xl" v-model="userMessage" placeholder="想學習什麼呢?" :disabled="chatState === 'TALKING'" />
-            </div>
             <div class="flex-none p-1 flex flex-row items-center gap-1">
-                <a v-if="chatState !== 'TALKING'" class="cursor-pointer text-gray-500 hover:text-gray-900" @click="openPromptModal">
+                <a v-if="chatState !== 'TALKING'" class="cursor-pointer text-gray-500 hover:text-gray-900" @click="openPromptModal" title="範例">
                     <span>
                         <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h8m-8 6h8m-8 6h8M4 16a2 2 0 1 1 3.321 1.5L4 20h5M4 5l2-1v6m-2 0h4"/>
                         </svg>
                     </span>
                 </a>
-                <a class="cursor-pointer text-gray-500 hover:text-gray-900" @click="send">
+            </div>
+            <div class="flex-1 p-1">
+                <input class="input w-1/1 rounded-xl" v-model="userMessage" placeholder="想學習什麼呢?" :disabled="chatState === 'TALKING'" />
+            </div>
+            <div class="flex-none p-1 flex flex-row items-center gap-1">
+                <a class="cursor-pointer text-gray-500 hover:text-gray-900" @click="send" title="傳送">
                     <span v-if="chatState !== 'TALKING'">
-                        <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linejoin="round" d="m17 13 3.4641-2V7L17 5l-3.4641 2v4M17 13l-3.4641-2M17 13v4l-7.00001 4M17 13V9m0 4-7.00001 4m3.53591-6L10.5 12.7348M9.99999 21l-3.4641-2.1318M9.99999 21v-4m-3.4641 2v-.1318m0 0V15L10.5 12.7348m-3.96411 6.1334L3.5 17V5m0 0L7 3l3.5 2m-7 0 2.99999 2M10.5 5v7.7348M10.5 5 6.49999 7M17 9l3.5-2M17 9l-3.5-2M9.99999 17l-3.5-2m0 .5V7"/>
+                        <svg class="size-6 rotate-90" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 18-7 3 7-18 7 18-7-3Zm0 0v-5"/>
                         </svg>
                     </span>
                     <span v-if="chatState === 'TALKING'" class="loading loading-spinner loading-md"></span>
@@ -227,7 +229,7 @@
                 {{ msgObj.speaker }}
                 <time class="text-xs opacity-70">{{ msgObj.time }}</time>
             </div>
-            <div class="chat-bubble  flex flex-row items-center">
+            <div class="chat-bubble  flex flex-row items-center gap-2">
                 <!-- 訊息傳遞中 -->
                 <a v-if="msgObj.role === 'user' && chatState === 'TALKING'">
                     <span class="loading loading-ring loading-xs"></span>
@@ -255,29 +257,17 @@
                 </p>
             </div>
         </div>
-        <div v-if="chatState === 'TALKING'" class="chat chat-start">
-            <div class="chat-image avatar">
-                <div class="avatar avatar-placeholder">
-                    <div class="size-8 rounded-full border-5 border-yellow-300 bg-white text-gray-900">
-                        <span class="text-xs">
-                            {{ "AI" }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="chat-header text-white">
-                {{ "AI" }}
-            </div>
-            <div class="chat-bubble">
-                好喔~ 稍等
-                <span class="loading loading-dots loading-xs"></span>
-            </div>
+        <div v-if="chatState === 'TALKING'" class="w-1/1 text-center mt-5">
+            <span class="skeleton skeleton-text text-xl text-white">
+                AI is thinking harder
+                <span class="loading loading-ring loading-xl"></span>
+            </span>
         </div>
     </div>
 </div>
 
 <!-- prompt modal -->
-<dialog id="promptModal" class="modal modal-end">
+<dialog id="promptModal" class="modal modal-start">
     <div class="modal-box h-1/1 w-4/5 flex flex-col bg-neutral-100">
         <div class="flex flex-col justify-center">
             <span class="text-lg text-gray-900 text-center">學習範本</span>
