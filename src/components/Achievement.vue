@@ -166,12 +166,11 @@
 <div class="h-1/1 w-1/1 flex flex-col md:flex-row gap-2 overflow-y-auto">
     <!-- 待解鎖清單 -->
     <ul class="list bg-base-100 rounded-box shadow-2xl">
-        <li class="p-4 pb-2 tracking-wide text-gray-900 bg-yellow-300/50 text-3xl rounded-xl shadow-2xl z-10" 
-            style="position: sticky; top:0;">
+        <li class="p-4 pb-2 tracking-wide text-gray-900 bg-yellow-300/50 text-3xl rounded-xl shadow-2xl z-10 sticky top-0">
             待解鎖清單
         </li>
 
-        <li v-for="(naObj, na_i) in nonAchieveEvents" class="list-row items-center">
+        <li v-for="(naObj, na_i) in nonAchieveEvents" class="list-row items-center hover:bg-yellow-200/50">
             <div class="text-4xl font-thin opacity-30 tabular-nums">
                 {{ ((na_i+1) < 10 ? "0" : "") + (na_i+1) }}
             </div>
@@ -192,12 +191,11 @@
     </ul>
     <!-- 已解鎖清單 -->
     <ul class="list bg-base-100 rounded-box shadow-2xl">
-        <li class="p-4 pb-2 tracking-wide text-gray-900 bg-green-300/50 text-3xl rounded-xl shadow-2xl z-10" 
-            style="position: sticky; top:0;">
+        <li class="p-4 pb-2 tracking-wide text-gray-900 bg-green-300/50 text-3xl rounded-xl shadow-2xl z-10 sticky top-0">
             已解鎖清單
         </li>
 
-        <li v-for="(aeObj, ae_i) in achieveEvents" class="list-row items-center">
+        <li v-for="(aeObj, ae_i) in achieveEvents" class="list-row items-center hover:bg-yellow-200/50">
             <div class="text-4xl font-thin opacity-30 tabular-nums">
                 {{ ((ae_i+1) < 10 ? "0" : "") + (ae_i+1) }}
             </div>
