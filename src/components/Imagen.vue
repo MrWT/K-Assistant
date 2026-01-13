@@ -82,8 +82,9 @@
     }
     // 開始生成圖片
     function makePromptImg(){
-        promptImg.prompt += ". 在圖片中只能出現英文!";
         console.log("makePromptImg.prompt=" + promptImg.prompt);
+
+        appState.value = "";
 
         // 增加 gen_image_count
         promptOptions.gen_image_count += 1;
@@ -101,6 +102,7 @@
             console.log("promptImgPromise.values=", values);
 
             if(values[0].startsWith("ERROR")){
+                appState.value = "ERROR: AI 發生錯誤, 請稍後再試試~~";
                 emit('popupMessage', false, "AI 發生錯誤, 請稍後再試試~~"); // Emitting the event with data
             }else{
                 promptImg.src = values[0];
@@ -135,33 +137,6 @@
             console.error('無法複製文字：', err);
         }
     }
-    /*
-    // 在 canvas 畫出 image / 文字
-    function drawImageActualSize() {
-        let canvas = document.getElementById("canvas");
-        let ctx = canvas.getContext("2d");
-
-        canvas.width = this.naturalWidth;
-        canvas.height = this.naturalHeight;
-
-        ctx.drawImage(this, 0, 0);
-
-        // 畫上文字
-        if(setPrompt.text)
-        {
-            let centerX = canvas.width / 2;
-            let centerY = canvas.height / 2;
-
-            ctx.font = '100px Arial';
-            ctx.fillStyle = 'white';
-
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-
-            ctx.strokeText("setPrompt.text", centerX, centerY);
-        }
-    }
-    */
     // 開啟 image modal
     function openImageModal(){
         document.getElementById("imageModal").showModal();
@@ -214,6 +189,11 @@
                 prompt += ", 以'" + setPrompt.paintStyle + "'方式呈現出圖片";
                 break;
         }
+        // 題字
+        if(setPrompt.text){
+            prompt += ", 並在圖片中加上'" + setPrompt.text + "' ";
+        }
+
         promptImg.prompt = prompt;
     }
     // 下載圖片
@@ -276,7 +256,7 @@
     </div>
     <div class="w-1/1 flex flex-col">
         <span class="w-1/1 bg-stone-400/50 p-2 text-start rounded-ss-xl rounded-se-xl">
-            畫中題字<br />(圖中只會呈現英文! 若打入中文, 會先翻譯成英文後, 再呈現在圖片上!):
+            畫中題字:
         </span>
         <div class="w-1/1">
             <input type="text" placeholder="e.g., Good Morning" class="input w-1/1 rounded-none rounded-es-xl rounded-ee-xl" v-model="setPrompt.text" @keyup.stop="combinePrompt" />
@@ -293,16 +273,24 @@
     </div>
     
     <div class="divider divider-primary"></div>
-    <div class="w-1/1 flex justify-center">
-        <div v-if="promptOptions.gen_image_count < promptOptions.gen_limit" class="w-1/2">
-            <button class="btn btn-square bg-black text-white w-1/1" @click.prevent="makePromptImg">
+    <div class="w-1/1 flex flex-col">
+        <div v-if="promptOptions.gen_image_count < promptOptions.gen_limit" class="w-1/1 flex justify-center">
+            <button class="btn btn-square bg-black text-white w-1/2" @click.prevent="makePromptImg">
                 生成
             </button>
         </div>
-        <div v-if="promptOptions.gen_image_count >= promptOptions.gen_limit" class="w-1/2">
-            <button class="btn btn-square bg-black text-white w-1/1" @click.prevent="copyPrompt">
+        <div v-if="promptOptions.gen_image_count >= promptOptions.gen_limit" class="w-1/1 flex justify-center">
+            <button class="btn btn-square bg-black text-white w-1/2" @click.prevent="copyPrompt">
                 複製, 到 AI 等工具貼上
             </button>
+        </div>
+        <div class="w-1/1 text-center">
+            <span v-if="promptOptions.gen_image_count >= promptOptions.gen_limit" class="text-red-500">
+                已達每日生成上限
+            </span>
+            <span v-if="appState.startsWith('ERROR')" class="text-red-500">
+                {{ appState }}
+            </span>
         </div>
     </div>
 </div>
@@ -315,12 +303,7 @@
             <div class="divider divider-primary"></div>
         </div>
         <div class="h-1/1 w-1/1 flex flex-col overflow-auto">
-            <!---->
             <img :src="promptImg.src" />
-            <!---->
-            <!--
-            <canvas id="canvas"></canvas>
-            -->
         </div>
         <div class="divider divider-primary"></div>
         <div class="modal-action">
