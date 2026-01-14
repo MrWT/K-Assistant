@@ -30,6 +30,8 @@
     let dsOptions_health = reactive([
         "康健雜誌", 
         "heho健康", 
+        "World Gym Blog",
+        "Be Your Fitness",
     ]);
     let dsOptions_normal = reactive([
         "經濟日報",
@@ -40,6 +42,8 @@
     ]);
     let dsOptions_sport = reactive([
         "Yahoo 奇摩運動",
+        "玩露趣",
+        "台灣愛露營",
     ]);
     let dsOptions_car = reactive([
         "CARNEWS車訊網", 
