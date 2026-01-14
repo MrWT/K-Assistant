@@ -25,7 +25,6 @@
     let userMessage = ref("");
     let chatMode = ref("聊天");
     let chatState = ref("TALKING");
-    let functionBarStatus = ref("OPEN");
     // 聊天室 UUID
     let chat_room_uuid = ref("INIT");
     let messages = reactive([]);
@@ -272,8 +271,6 @@
             let language = chatMode.value.substr(2);
             translate(language, userMessage.value);
         }
-        // 關閉 function bar
-        functionBarStatus.value = "CLOSE";
     }
     // 重傳上一個訊息
     function send_again(re_msg){
@@ -377,10 +374,6 @@
         closeNewChatConfirmModal();
         closePromptModal();
     }
-    // 開啟/關閉 function bar
-    function toggleFunctionBar(){
-        functionBarStatus.value = functionBarStatus.value === "OPEN" ? "CLOSE" : "OPEN"; 
-    }
 
     // 監聽
     watch(promptAction, (newValue, oldValue) => {
@@ -419,54 +412,35 @@
 
     <!-- function button bar -->
     <div class="w-1/1 shadow-2xl flex flex-col bg-white rounded-xl">
-        <div class="w-1/1 flex flex-row gap-1 p-1 items-center">
-            <div class="flex-1 flex flex-row gap-1 p-1 overflow-x-auto items-center">
-                <label>
-                    模式:
-                </label>
-                <label>
-                    <input type="radio" value="聊天" v-model="chatMode" />
-                    聊天
-                </label>
-                <label>
-                    <input type="radio" value="翻譯日文" v-model="chatMode" />
-                    翻譯日文
-                </label>
-                <label>
-                    <input type="radio" value="翻譯韓文" v-model="chatMode" />
-                    翻譯韓文
-                </label>
-            </div>
-            <div class="flex-none items-center">
-                <a class="cursor-pointer text-gray-500 hover:text-gray-900" @click="toggleFunctionBar">
-                    <svg v-if="functionBarStatus === 'OPEN'" class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 15 7-7 7 7"/>
-                    </svg>
-                    <svg v-if="functionBarStatus === 'CLOSE'" class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
+        <div class="w-1/1 flex flex-row">
+            <div v-if="chatState !== 'TALKING'" class="flex-none p-1 flex flex-row gap-2">
+                <!-- 新話題 -->
+                <a title="新話題" class="cursor-pointer p-1 bg-rose-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="openNewChatConfirmModal">
+                    <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7.757v8.486M7.757 12h8.486M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
                 </a>
+
+                <!-- 提詞機 -->
+                <a title="提詞機" class="cursor-pointer p-1 bg-yellow-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="openPromptModal">
+                    <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h8m-8 6h8m-8 6h8M4 16a2 2 0 1 1 3.321 1.5L4 20h5M4 5l2-1v6m-2 0h4"/>
+                    </svg>
+                </a>        
             </div>
-        </div>
-        <div v-if="functionBarStatus === 'OPEN'" class="w-1/1 flex flex-row">
             <div class="flex-1 p-1">
-                <textarea class="textarea w-1/1 h-1/1 rounded-xl" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
+                <input v-if="userMessage.length <= 50" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
+                <textarea v-if="userMessage.length > 50" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
             </div>
-            <div class="flex-none p-1 flex-col w-1/4 min-w-10 max-w-30 h-1/1 gap-1">
-                <button class="btn bg-blue-500/50 text-gray-900 hover:bg-gray-900 hover:text-gray-100 rounded-xl w-1/1 h-1/1" @click="send">
-                    <span v-if="chatState !== 'TALKING' && chatMode === '聊天'">傳送</span>
-                    <span v-if="chatState !== 'TALKING' && chatMode !== '聊天'">翻譯</span>
+            <div class="flex-none p-1 flex flex-row gap-1">
+                <!-- 傳送 -->
+                <a title="傳送" class="cursor-pointer p-1 bg-blue-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="send">
                     <span v-if="chatState === 'TALKING'" class="loading loading-spinner loading-md"></span>
-                </button>
+                    <svg v-if="chatState !== 'TALKING'" class="size-6 rotate-90" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 18-7 3 7-18 7 18-7-3Zm0 0v-5"/>
+                    </svg>            
+                </a>        
             </div>
-        </div>
-        <div v-if="chatMode === '聊天' && functionBarStatus === 'OPEN'" class="w-1/1 flex flex-row gap-1 p-1 overflow-x-auto">
-            <button class="btn rounded-xl bg-red-300 text-gray-900 hover:bg-blue-300" @click="openNewChatConfirmModal">
-                新對話
-            </button>
-            <button class="btn rounded-xl bg-gray-900 text-white hover:bg-blue-300 hover:text-black" @click="openPromptModal">
-                提詞機
-            </button>
         </div>
     </div>
 
