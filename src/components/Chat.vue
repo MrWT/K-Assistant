@@ -48,6 +48,8 @@
             { value: "politic", text: "政治", },
             { value: "basketball", text: "籃球", },
             { value: "baseball", text: "棒球", },
+            { value: "fitness", text: "健身", },
+            { value: "camping", text: "露營", },
         ],
         time: [
             { value: "today", text: "今天", },
@@ -55,10 +57,12 @@
             { value: "1week", text: "近一週", },
             { value: "1month", text: "近一個月", },
             { value: "3month", text: "近三個月", },
+            { value: "recently", text: "近期", },
             { value: "6month", text: "近半年", },
             { value: "1year", text: "近一年", },
         ],
         type: [
+            { value: "information", text: "資訊", },
             { value: "news", text: "新聞", },
             { value: "business", text: "市場", },
         ],
@@ -67,8 +71,8 @@
     let promptAction = ref("summary");
     let promptNation = ref("taiwan");
     let promptScope = ref("entertainment");
-    let promptTime = ref("6month");
-    let promptType = ref("news");
+    let promptTime = ref("recently");
+    let promptType = ref("information");
     // 提詞機 - 結果
     let prompt = ref("");
 
@@ -302,6 +306,7 @@
                         case "1week": stDate = moment().add(-7, "d").format("YYYY-MM-DD"); break;
                         case "1month": stDate = moment().add(-1, "M").format("YYYY-MM-DD"); break;
                         case "3month": stDate = moment().add(-3, "M").format("YYYY-MM-DD"); break;
+                        case "recently": stDate = moment().add(-3, "M").format("YYYY-MM-DD"); break;
                         case "6month": stDate = moment().add(-6, "M").format("YYYY-MM-DD"); break;
                         case "1year": stDate = moment().add(-12, "M").format("YYYY-MM-DD"); break;
                     }
@@ -318,7 +323,7 @@
             });
         }
 
-        c_prompt += "<資料主題>";
+        c_prompt += "<資料主體>";
         promptOptions.scope.forEach((scopeObj, act_i) => {
             if(promptScope.value === scopeObj.value){
                 c_prompt += scopeObj.text;
