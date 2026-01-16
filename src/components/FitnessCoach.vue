@@ -4,7 +4,7 @@
     import { gsap } from "gsap"
     import { fetchData } from "@/composables/fetchData"
 
-    const emit = defineEmits(['popupMessage']);
+    const emit = defineEmits(['popupMessage', 'gotoFitnessPlan']);
     const props = defineProps({
         title: String,
         account: String,
@@ -159,6 +159,8 @@
 
             // 新增訓練菜單
             newFitnessPlan(planList);
+            // 統整後, 自動跳至"執行計畫"
+            emit('gotoFitnessPlan', "hello"); // Emitting the event with data
         });
     }
     // 新增訓練菜單

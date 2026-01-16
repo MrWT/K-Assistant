@@ -253,6 +253,16 @@
         console.log("gotoIntroduceAuthor.data=", data);
         gotoPage("author");
     }
+    // 前往健身訓練-執行計畫
+    function gotoFitnessPlan(data){
+        console.log("gotoFitnessPlan.data=", data);
+
+        appSetting.funButtons.forEach((fbObj, fb_i) => {
+            if(fbObj["key"] === "fitness_plan"){
+                gotoPage( fbObj );
+            }
+        });
+    }
     // 使用者資訊
     function openUserInfoModal(){
         document.getElementById("userInfoModal").showModal();
@@ -356,7 +366,7 @@
         <Footmark v-else-if="appSetting.contentComponent === 'footmark'" :title="appSetting.title" :account="userInfo.account" :googleMapApiKey="appSetting.googleMapApiKey" @popup-message="popupMessage" />
         <Finance v-else-if="appSetting.contentComponent === 'finance'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <Chat v-else-if="appSetting.contentComponent === 'chat'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
-        <FitnessCoach v-else-if="appSetting.contentComponent === 'fitness_coach'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
+        <FitnessCoach v-else-if="appSetting.contentComponent === 'fitness_coach'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage"   @goto-fitness-plan="gotoFitnessPlan" />
         <FitnessPlan v-else-if="appSetting.contentComponent === 'fitness_plan'" :title="appSetting.title" :account="userInfo.account" @popup-message="popupMessage" />
         <Imagen v-else-if="appSetting.contentComponent === 'imagen'" :title="appSetting.title" :account="userInfo.account" :user_role="userInfo.role" @popup-message="popupMessage" />
         <PlanTrip v-else-if="appSetting.contentComponent === 'plan_trip'" :title="appSetting.title" :account="userInfo.account" :googleMapApiKey="appSetting.googleMapApiKey" @popup-message="popupMessage" />
