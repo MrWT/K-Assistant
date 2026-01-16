@@ -434,8 +434,8 @@
                 </a>        
             </div>
             <div class="flex-1 p-1">
-                <input v-if="userMessage.length <= 50" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
-                <textarea v-if="userMessage.length > 50" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
+                <input v-if="userMessage.length <= 20" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
+                <textarea v-if="userMessage.length > 20" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" ></textarea>
             </div>
             <div class="flex-none p-1 flex flex-row gap-1">
                 <!-- 傳送 -->
