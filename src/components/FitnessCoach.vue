@@ -311,12 +311,12 @@
                 </a>
             </div>
             <div class="flex-1 p-1">
-                <input v-if="userMessage.length <= 50" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
-                <textarea v-if="userMessage.length > 50" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
+                <input v-if="userMessage.length <= 20" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
+                <textarea v-if="userMessage.length > 20" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
             </div>
             <div class="flex-none p-1 flex flex-row gap-1">
                 <!-- 統整 -->
-                <a v-if="chatState !== 'TALKING'" title="統整" class="cursor-pointer p-1 bg-blue-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="openModal_namePlanModal">
+                <a v-if="chatState !== 'TALKING'" title="統整" class="cursor-pointer p-1 bg-stone-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="openModal_namePlanModal">
                     <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v5m0 0 2-2m-2 2-2-2M3 6v1a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Zm2 2v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H5Z"/>
                     </svg>
