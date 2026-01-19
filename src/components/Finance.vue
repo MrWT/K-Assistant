@@ -274,10 +274,7 @@
 
         house.now.unit_price = now_unit_price;
         house.now.price = parseFloat( houseData.remark ) * house.now.unit_price;
-
-        // 實際購買後才算數
-        house.now.price = 0;
-
+    
         // 累計總資產
         total_assets.value += house.now.price;
     }
@@ -338,7 +335,12 @@
             房屋價值
         </span>
         <span class="text-xl w-1/1">
-            ( 尚未購買, 故還沒有實質產生價值 )<br />
+            增加價值: NTD$ {{ new Intl.NumberFormat('en-US').format( house.now.price - house.original.price ) }} 
+        </span>
+
+        <br />
+
+        <span class="text-xl w-1/1">
             現有價值: NTD$ {{ new Intl.NumberFormat('en-US').format( house.now.price ) }} 
         </span>
         <span class="text-lg">
