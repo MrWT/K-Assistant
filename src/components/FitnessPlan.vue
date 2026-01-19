@@ -272,8 +272,8 @@
 
         <div class="w-1/1 h-9/10 flex flex-col overflow-y-auto">
             <div v-for="(day_seq, ds_i) in selExecuteDaySeqList" class="flex flex-col">
-                <span class="underline x-1/1">
-                    第 {{ day_seq + 1 }} 天
+                <span class="x-1/1">
+                    < 第 {{ day_seq + 1 }} 天 > <span class="underline">{{ selExecuteObj.purposes[day_seq] }}</span>
                 </span>
                 <div v-for="(itemObj, item_i) in selExecuteItemList">
                     <div v-if="itemObj.day_seq === day_seq" 
