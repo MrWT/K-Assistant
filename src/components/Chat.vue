@@ -25,11 +25,13 @@
     let userMessage = ref("");
     let chatMode = ref("聊天");
     let chatState = ref("TALKING");
+    let inputRef = ref(null);
+    let textareaRef = ref(null);
     // 聊天室 UUID
     let chat_room_uuid = ref("INIT");
     let messages = reactive([]);
     let userInfo = reactive({});
-    let aiRole = reactive({});
+    let aiRole = reactive({});    
     // 提詞機 - 選項
     let promptOptions = reactive({
         nation: [
@@ -408,6 +410,23 @@
             messages.splice(0, messages.length);
         }
     });
+    watch(userMessage, (newValue, oldValue) => {
+        //console.log("watch.userMessage.value=", userMessage.value);
+
+        try{
+            // Vue3 因資料改變 DOM 後觸發
+            nextTick(() => {
+                if(userMessage.value.length <= 20){
+                    inputRef.value.focus();
+                }else{
+                    textareaRef.value.focus();
+                }
+            });
+        }catch(ex){
+            console.log("watch.userMessage.exception=", ex);
+        }
+    });
+
 
 </script>
 
@@ -434,8 +453,8 @@
                 </a>        
             </div>
             <div class="flex-1 p-1">
-                <input v-if="userMessage.length <= 20" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
-                <textarea v-if="userMessage.length > 20" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" ></textarea>
+                <input v-if="userMessage.length <= 20" ref="inputRef" type="text" class="input w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
+                <textarea v-if="userMessage.length > 20" ref="textareaRef" class="textarea w-1/1 h-1/1 rounded-xl border" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" ></textarea>
             </div>
             <div class="flex-none p-1 flex flex-row gap-1">
                 <!-- 傳送 -->
