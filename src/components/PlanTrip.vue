@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, reactive, onMounted, nextTick } from 'vue'
+    import { ref, reactive, onMounted, nextTick, watch } from 'vue'
     import moment from 'moment'
     import { fetchData } from "@/composables/fetchData"
     import { GoogleMap, AdvancedMarker, CustomControl, InfoWindow } from 'vue3-google-map'
@@ -19,7 +19,9 @@
     let appState = ref("");
     let chatState = ref("TALKING");
     let userMessage = ref("");    
-    let functionBarStatus = ref("OPEN");
+    let inputRef = ref(null);
+    let textareaRef = ref(null);
+    let functionBarSwitch = ref(false);
     // 聊天室 UUID
     let chat_room_uuid = ref("INIT");
     let messages = reactive([]);
@@ -542,10 +544,28 @@
         closeAdjustScheduleModal();
         closeSampleModal();
     }
-    // 開啟/關閉 function bar
+
     function toggleFunctionBar(){
-        functionBarStatus.value = functionBarStatus.value === "OPEN" ? "CLOSE" : "OPEN"; 
+        functionBarSwitch.value = !functionBarSwitch.value;
     }
+
+    // 監聽
+    watch(userMessage, (newValue, oldValue) => {
+        //console.log("watch.userMessage.value=", userMessage.value);
+
+        try{
+            // Vue3 因資料改變 DOM 後觸發
+            nextTick(() => {
+                if(userMessage.value.length <= 20){
+                    inputRef.value.focus();
+                }else{
+                    textareaRef.value.focus();
+                }
+            });
+        }catch(ex){
+            console.log("watch.userMessage.exception=", ex);
+        }
+    });
 
 </script>
 
@@ -554,45 +574,51 @@
 <div class="w-1/1 h-1/1 flex flex-col rounded-xl border p-2 bg-gray-900">
     <!-- function button bar -->
     <div class="w-1/1 shadow-2xl flex flex-col bg-white rounded-xl">
-        <div v-if="functionBarStatus === 'OPEN'" class="w-1/1 flex flex-row">
-            <div class="flex-1 p-1">
-                <textarea class="textarea w-1/1 h-1/1 rounded-xl" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
-            </div>
-            <div class="flex-none p-1 flex-col w-1/4 min-w-10 max-w-30 h-1/1 gap-1">
-                <button class="btn bg-blue-500/50 text-gray-900 hover:bg-gray-900 hover:text-gray-100 rounded-xl w-1/1 h-1/1" @click="send">
-                    <span v-if="chatState !== 'TALKING'">傳送</span>
-                    <span v-if="chatState === 'TALKING'" class="loading loading-spinner loading-md"></span>
-                </button>
-            </div>
-        </div>
-        <div class="w-1/1 flex flex-row gap-1 p-1 overflow-x-auto items-center"
-             :class="{'justify-end': functionBarStatus === 'CLOSE'}">
-            <div v-if="functionBarStatus === 'OPEN'" class="flex-1 flex flex-row gap-1 p-1 overflow-x-auto items-center">
-                <button class="btn rounded-xl bg-red-300 text-gray-900 hover:bg-yellow-300" @click="openReplanConfirmModal">
-                    新對話
-                </button>
-                <button class="btn rounded-xl bg-gray-300 hover:bg-yellow-300" @click="remindPlan">
-                    回顧聊天
-                </button>
-                <button class="btn rounded-xl bg-fuchsia-300 hover:bg-yellow-300" @click="openSampleModal">
-                    選擇範本
-                </button>
-                <button class="btn rounded-xl bg-indigo-300/70 text-black hover:bg-yellow-300 hover:text-gray-900" @click="openSumupModal">
-                    統整行程
-                </button>
-                <button class="btn rounded-xl bg-emerald-400/70 text-black hover:bg-yellow-300 hover:text-gray-900" @click="openAdjustScheduleModal">
-                    已排定的旅行
-                </button>
-            </div>
-            <div class="flex-none p-1 items-center">
-                <a class="cursor-pointer text-gray-400 hover:text-gray-900" @click="toggleFunctionBar">
-                    <svg v-if="functionBarStatus === 'OPEN'" class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 15 7-7 7 7"/>
-                    </svg>
-                    <svg v-if="functionBarStatus === 'CLOSE'" class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <div class="w-1/1 flex flex-row items-center">
+            <div v-if="chatState !== 'TALKING'" class="flex-none p-1 flex-row gap-1">
+                <!-- 功能 button -->
+                <a v-if="functionBarSwitch === false" title="開啟功能" class="cursor-pointer p-1 bg-pink-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="toggleFunctionBar">
+                    <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
                     </svg>
                 </a>
+                <a v-if="functionBarSwitch === true" title="關閉功能" class="cursor-pointer p-1 bg-pink-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="toggleFunctionBar">
+                    <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 15 7-7 7 7"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="flex-1 p-1">
+                <input v-if="userMessage.length <= 20" ref="inputRef" type="text" class="input w-1/1 h-1/1 rounded-xl border p-2" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'" />
+                <textarea v-if="userMessage.length > 20" ref="textareaRef" class="textarea w-1/1 h-1/1 rounded-xl p-2" v-model="userMessage" placeholder="想說點什麼呢?" :disabled="chatState === 'TALKING'"></textarea>
+            </div>
+            <div class="flex-none p-1 flex-row gap-1">
+                <!-- 傳送 -->
+                <a title="傳送" class="cursor-pointer p-1 bg-blue-500/50 text-gray-500 hover:text-gray-900 rounded-xl flex place-items-center" @click="send">
+                    <span v-if="chatState === 'TALKING'" class="loading loading-spinner loading-md"></span>
+                    <svg v-if="chatState !== 'TALKING'" class="size-6 rotate-90" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 18-7 3 7-18 7 18-7-3Zm0 0v-5"/>
+                    </svg>            
+                </a>        
+            </div>
+        </div>
+        <div v-if="functionBarSwitch === true" class="w-1/1 flex flex-row gap-1 p-1 overflow-x-auto items-center">
+            <div class="flex-1 flex flex-row gap-1 p-1 overflow-x-auto items-center">
+                <button class="btn rounded-xl bg-red-300 text-gray-500 hover:text-gray-900" @click="openReplanConfirmModal">
+                    新對話
+                </button>
+                <button class="btn rounded-xl bg-gray-300 text-gray-500 hover:text-gray-900" @click="remindPlan">
+                    回顧聊天
+                </button>
+                <button class="btn rounded-xl bg-fuchsia-300 text-gray-500 hover:text-gray-900" @click="openSampleModal">
+                    選擇範本
+                </button>
+                <button class="btn rounded-xl bg-indigo-300/70 text-gray-500 hover:text-gray-900" @click="openSumupModal">
+                    統整行程
+                </button>
+                <button class="btn rounded-xl bg-emerald-400/70 text-gray-500 hover:text-gray-900" @click="openAdjustScheduleModal">
+                    已排定的旅行
+                </button>
             </div>
         </div>
     </div>
