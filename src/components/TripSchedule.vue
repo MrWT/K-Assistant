@@ -1,5 +1,6 @@
 <script setup>
     import { ref, reactive, onMounted, watch } from 'vue'
+    import moment from 'moment'
     import { fetchData } from "@/composables/fetchData"
     import { GoogleMap, AdvancedMarker, InfoWindow, Polyline } from 'vue3-google-map'
 
@@ -66,10 +67,20 @@
             console.log("fetchInitData.values=", values);
 
             values[0].sort((x, y) => {
-                if(x["trip_start_date"] > y["trip_start_date"]){
+                let tripStDate_x = moment(new Date(x["trip_start_date"])).format("YYYYMMDD");
+                let tripStDate_y = moment(new Date(y["trip_start_date"])).format("YYYYMMDD");
+
+                try{
+                    tripStDate_x = moment(new Date(x["trip_start_date"])).format("YYYYMMDD");
+                    tripStDate_y = moment(new Date(y["trip_start_date"])).format("YYYYMMDD");
+                }catch(ex){
+                    // do nothing
+                }
+
+                if(tripStDate_x > tripStDate_y){
                     return 1;
                 }
-                if(x["trip_start_date"] < y["trip_start_date"]){
+                if(tripStDate_x < tripStDate_y){
                     return -1;
                 }
 
